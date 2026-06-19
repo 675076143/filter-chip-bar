@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback, useLayoutEffect } from 'react';
+import { useState, useRef, useEffect, useCallback, useLayoutEffect, useMemo } from 'react';
 import {
   type ChipConfig,
   type FilterOption,
@@ -173,6 +173,21 @@ export function useFilterChipBar({
     }
   });
 
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === '/' && !inputRef.current?.contains(document.activeElement)) {
+        const tag = (document.activeElement as HTMLElement)?.tagName;
+        if (tag !== 'INPUT' && tag !== 'TEXTAREA') {
+          e.preventDefault();
+          inputRef.current?.focus();
+          setDropdownOpen(true);
+        }
+      }
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, []);
+
   const measureTextWidth = useCallback(
     (text: string): number => {
       if (!text || typeof document === 'undefined' || !fontInfo) return 0;
@@ -185,20 +200,16 @@ export function useFilterChipBar({
     [fontInfo],
   );
 
-  const parsedToken: ParsedToken = parseCurrentToken(searchText, chipConfigs);
+  const parsedToken = useMemo(() => parseCurrentToken(searchText, chipConfigs), [searchText, chipConfigs]);
   const lastSpaceIdx = searchText.lastIndexOf(' ');
   const textBeforeToken = lastSpaceIdx === -1 ? '' : searchText.slice(0, lastSpaceIdx + 1);
   const dropdownOffsetX = ICON_OFFSET + measureTextWidth(textBeforeToken);
   const activeFilterCount = searchText.split(/\s+/).filter(Boolean).length;
-  const textTokens = tokenizeSearchText(searchText, chipConfigs, dynamicOptions);
+  const textTokens = useMemo(() => tokenizeSearchText(searchText, chipConfigs, dynamicOptions), [searchText, chipConfigs, dynamicOptions]);
 
-  const suggestions = buildSuggestions(
-    searchText,
-    chipConfigs,
-    dynamicOptions,
-    parsedToken,
-    lastSpaceIdx,
-    commands,
+  const suggestions = useMemo(
+    () => buildSuggestions(searchText, chipConfigs, dynamicOptions, parsedToken, lastSpaceIdx, commands),
+    [searchText, chipConfigs, dynamicOptions, parsedToken, lastSpaceIdx, commands],
   );
 
   const handleSavePreset = useCallback(() => {

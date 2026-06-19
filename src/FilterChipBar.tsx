@@ -184,7 +184,7 @@ export default function FilterChipBar({
           )}
         </div>
       )}
-      <div className="flex-1 max-h-80 overflow-y-auto py-0.5">
+      <div className="flex-1 max-h-80 overflow-y-auto py-0.5" role="listbox" id="fcb-listbox">
         {fcb.suggestions.length === 0 ? (
           fcb.isLoadingDynamic ? (
             <div className="p-2 space-y-1.5">
@@ -239,6 +239,9 @@ export default function FilterChipBar({
             return (
               <div
                 key={idx}
+                id={`fcb-option-${idx}`}
+                role="option"
+                aria-selected={idx === fcb.activeSuggestionIdx}
                 ref={(el) => {
                   fcb.itemRefs.current[idx] = el;
                 }}
@@ -391,6 +394,12 @@ export default function FilterChipBar({
                 <input
                   ref={fcb.inputRef as React.Ref<HTMLInputElement>}
                   type="text"
+                  role="combobox"
+                  aria-expanded={fcb.isDropdownOpen}
+                  aria-controls="fcb-listbox"
+                  aria-activedescendant={fcb.activeSuggestionIdx >= 0 ? `fcb-option-${fcb.activeSuggestionIdx}` : undefined}
+                  aria-autocomplete="list"
+                  aria-label="Search filters"
                   value={fcb.searchText}
                   onChange={fcb.handleInputChange}
                   onPaste={fcb.handlePaste}

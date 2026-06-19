@@ -667,3 +667,28 @@ export const WithCommands: Story = {
     initialSearchText: '创建',
   },
 };
+
+export const DarkMode: Story = {
+  name: 'Dark Mode / 暗色模式',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'shadcn renderer uses CSS variables that automatically adapt to `.dark` class. ' +
+          'shadcn 渲染器使用 CSS 变量,自动适配 `.dark` 类名。',
+      },
+    },
+    backgrounds: { default: 'dark' },
+  },
+  render: () => (
+    <div className="dark" style={{ background: 'hsl(240 10% 3.9%)', minHeight: 200, padding: 16, borderRadius: 8 }}>
+      <FilterChipBar
+        chipConfigs={defaultChipConfigs}
+        storageNamespace="storybook-dark-demo"
+        statusOptions={defaultStatusOptions}
+        onFiltersChange={fn()}
+        initialSearchText="审核状态:通过"
+      />
+    </div>
+  ),
+};

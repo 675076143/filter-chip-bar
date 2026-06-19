@@ -87,7 +87,11 @@ export function loadPresets(namespace: string): SearchPreset[] {
 }
 
 export function savePresets(namespace: string, presets: SearchPreset[]): void {
-  localStorage.setItem(presetStorageKey(namespace), JSON.stringify(presets));
+  try {
+    localStorage.setItem(presetStorageKey(namespace), JSON.stringify(presets));
+  } catch {
+    // quota exceeded or privacy mode — silently ignore
+  }
 }
 
 export function loadRecent(namespace: string): RecentSearch[] {
@@ -100,5 +104,9 @@ export function loadRecent(namespace: string): RecentSearch[] {
 }
 
 export function saveRecent(namespace: string, searches: RecentSearch[]): void {
-  localStorage.setItem(recentStorageKey(namespace), JSON.stringify(searches.slice(0, 10)));
+  try {
+    localStorage.setItem(recentStorageKey(namespace), JSON.stringify(searches.slice(0, 10)));
+  } catch {
+    // quota exceeded or privacy mode — silently ignore
+  }
 }
