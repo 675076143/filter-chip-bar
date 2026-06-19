@@ -22,31 +22,17 @@ import { useFilterChipBar } from './hook';
 import { Popover, PopoverTrigger, PopoverContent, PopoverAnchor } from './ui/popover';
 import { cn } from './lib/utils';
 
-const DEFAULT_PLACEHOLDER = '搜索或输入筛选条件';
+const DEFAULT_PLACEHOLDER = 'Search or type filters...';
 
 const DEFAULT_SYNTAX_HELP: ReactNode = (
   <div className="text-xs leading-relaxed max-w-[280px] space-y-0.5">
-    <div>
-      <b>key:value</b> — 筛选指定条件
-    </div>
-    <div>
-      <b>-key:value</b> — 排除匹配项（反选）
-    </div>
-    <div>
-      <b>key:&quot;带空格的值&quot;</b> — 引号包裹含空格的值
-    </div>
-    <div>
-      <b>key:val1,val2</b> — 多值逗号分隔
-    </div>
-    <div>
-      <b>数值字段:&gt;=100</b> — 数值比较（≥ ≤ = ~）
-    </div>
-    <div>
-      <b>日期字段:2024-01-01~2024-12-31</b> — 区间
-    </div>
-    <div>
-      <b>空格</b> — 分隔多个条件
-    </div>
+    <div><b>key:value</b> — Filter by field</div>
+    <div><b>-key:value</b> — Exclude matches (negation)</div>
+    <div><b>key:"two words"</b> — Quote values with spaces</div>
+    <div><b>key:val1,val2</b> — Multiple values (comma)</div>
+    <div><b>num:&gt;=100</b> — Numeric comparison (≥ ≤ = ~)</div>
+    <div><b>date:2024-01-01~2024-12-31</b> — Date range</div>
+    <div><b>space</b> — Separate multiple conditions</div>
   </div>
 );
 
@@ -163,7 +149,7 @@ export default function FilterChipBar({
         <div className="w-[200px] max-h-80 overflow-y-auto border-r border-border py-0.5 shrink-0">
           {!fcb.searchText && (
             <div className="px-3 pt-1 pb-0.5 text-[11px] text-muted-foreground/60 font-semibold">
-              搜索历史
+              Recent
             </div>
           )}
           {fcb.filteredHistory.map((h, hi) => (
@@ -181,7 +167,7 @@ export default function FilterChipBar({
                 {h.text.length > 20 ? h.text.slice(0, 17) + '...' : h.text}
               </span>
               <span className="text-[10px] text-muted-foreground/60 shrink-0 tabular-nums">
-                {h.total}条
+                {h.total}
               </span>
             </div>
           ))}
@@ -193,28 +179,40 @@ export default function FilterChipBar({
               }}
               className="px-3 py-1 cursor-pointer text-xs text-muted-foreground/80 hover:bg-accent transition-colors"
             >
-              🗑 清除历史
+              Clear history
             </div>
           )}
         </div>
       )}
       <div className="flex-1 max-h-80 overflow-y-auto py-0.5">
         {fcb.suggestions.length === 0 ? (
-          <div className="p-3 text-center">
-            {fcb.isLoadingDynamic ? (
-              <Loader2 className="size-4 animate-spin mx-auto text-muted-foreground/60" />
-            ) : (
+          fcb.isLoadingDynamic ? (
+            <div className="p-2 space-y-1.5">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="flex items-center gap-2 px-3 py-1.5">
+                  <div className="size-3 rounded-full bg-muted animate-pulse shrink-0" />
+                  <div className="h-3 flex-1 rounded bg-muted animate-pulse" style={{ animationDelay: `${i * 100}ms` }} />
+                  <div className="h-3 w-8 rounded bg-muted animate-pulse shrink-0" style={{ animationDelay: `${i * 100}ms` }} />
+                </div>
+              ))}
+              <div className="flex items-center justify-center gap-1.5 pt-1 text-[11px] text-muted-foreground/60">
+                <Loader2 className="size-3 animate-spin" />
+                Loading options...
+              </div>
+            </div>
+          ) : (
+            <div className="p-3 text-center">
               <span className="text-xs text-muted-foreground/80">
                 {fcb.parsedToken.phase === 'freeText' && fcb.parsedToken.filterConfig
                   ? fcb.parsedToken.filterConfig.type === 'numberRange'
-                    ? '直接输入数值，如: 100 或 100~200'
+                    ? 'Enter a number, e.g. 100 or 100~200'
                     : fcb.parsedToken.filterConfig.type === 'dateRange'
-                      ? '格式: 2024-01-01~2024-12-31'
-                      : '直接输入文本，按空格结束'
-                  : '无匹配筛选项'}
+                      ? 'Format: 2024-01-01~2024-12-31'
+                      : 'Type text and press space to confirm'
+                  : 'No matching filters'}
               </span>
-            )}
-          </div>
+            </div>
+          )
         ) : (
           fcb.suggestions.map((s, idx) => {
             if (s.isDivider) {
@@ -272,8 +270,8 @@ export default function FilterChipBar({
                 <span className="overflow-hidden text-ellipsis whitespace-nowrap flex-1">
                   {isToggle
                     ? isNeg
-                      ? '取消排除'
-                      : '排除'
+                      ? 'Remove exclusion'
+                      : 'Exclude'
                     : isCommand
                       ? s.label
                       : renderSuggestionLabel(s.label, fcb.parsedToken.prefix)}
@@ -287,6 +285,12 @@ export default function FilterChipBar({
             );
           })
         )}
+        {fcb.isLoadingDynamic && fcb.suggestions.length > 0 && (
+          <div className="flex items-center justify-center gap-1.5 py-2 text-[11px] text-muted-foreground/60">
+            <Loader2 className="size-3 animate-spin" />
+            Loading more options...
+          </div>
+        )}
       </div>
     </div>
   );
@@ -297,7 +301,7 @@ export default function FilterChipBar({
         <div className="flex gap-2 items-center">
           <input
             className="flex-1 h-7 px-2 text-xs rounded-md border border-border bg-background text-foreground outline-none placeholder:text-muted-foreground/50 focus:border-ring focus:ring-1 focus:ring-ring transition-colors"
-            placeholder="预设名称"
+            placeholder="Preset name"
             value={fcb.presetName}
             onChange={(e) => fcb.setPresetName(e.target.value)}
             onKeyDown={(e) => {
@@ -308,14 +312,14 @@ export default function FilterChipBar({
             className="h-7 px-3 text-xs font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:pointer-events-none transition-colors shrink-0"
             onClick={fcb.handleSavePreset}
             disabled={!fcb.presetName.trim()}
-          >
-            保存
-          </button>
+        >
+          Save
+        </button>
         </div>
       </div>
       {fcb.presets.length === 0 ? (
         <div className="text-xs text-muted-foreground/80 text-center py-3 px-3">
-          暂无搜索预设
+          No saved presets
         </div>
       ) : (
         <div className="max-h-60 overflow-y-auto p-1">
@@ -331,7 +335,7 @@ export default function FilterChipBar({
                   {p.name}
                 </div>
                 <div className="text-[11px] text-muted-foreground/60 truncate">
-                  {p.searchText || '(空)'}
+                  {p.searchText || '(empty)'}
                 </div>
               </div>
               <Share2
@@ -428,7 +432,7 @@ export default function FilterChipBar({
 
         {fcb.activeFilterCount > 0 && (
           <span className="text-xs text-muted-foreground/80 shrink-0 whitespace-nowrap">
-            {fcb.activeFilterCount}个条件
+            {`${fcb.activeFilterCount} filter${fcb.activeFilterCount > 1 ? 's' : ''}`}
           </span>
         )}
 
@@ -436,7 +440,7 @@ export default function FilterChipBar({
           <PopoverTrigger asChild>
             <button
               className="inline-flex items-center justify-center rounded-md text-sm font-medium h-8 w-8 hover:bg-accent hover:text-accent-foreground transition-colors"
-              title="搜索预设"
+              title="Presets"
             >
               <Star className="size-4" />
             </button>
@@ -450,13 +454,13 @@ export default function FilterChipBar({
           <PopoverTrigger asChild>
             <button
               className="inline-flex items-center justify-center rounded-md text-sm font-medium h-8 w-8 hover:bg-accent hover:text-accent-foreground transition-colors"
-              title="语法帮助"
+              title="Syntax help"
             >
               <HelpCircle className="size-4" />
             </button>
           </PopoverTrigger>
           <PopoverContent align="end" className="p-3">
-            <div className="text-sm font-medium mb-1.5">搜索语法</div>
+            <div className="text-sm font-medium mb-1.5">Search Syntax</div>
             {syntaxHelp}
           </PopoverContent>
         </Popover>
