@@ -1,3 +1,5 @@
+[English](./README.md) | [中文](./README.zh-CN.md)
+
 # filter-chip-bar
 
 > 搜索即入口 — Headless filter + command palette component for React.

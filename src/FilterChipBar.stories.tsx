@@ -63,6 +63,85 @@ const meta: Meta<typeof FilterChipBar> = {
     docs: {
       description: {
         component: `
+# FilterChipBar — Search as the Entry Point
+
+> Search is the first entry point for human-computer interaction. Simple, yet powerful.
+
+---
+
+## Design Vision
+
+In traditional backend systems, users face a row of dropdowns, date pickers, and checkboxes.
+Every additional control adds cognitive overhead.
+
+**FilterChipBar condenses all filtering into one search box.** Users don't learn a UI layout — they just type what they want.
+
+Inspired by Linear, Raycast, and VS Code Command Palette —
+**the search box is not a "filter tool", it's the primary interaction entry point of the entire system.**
+
+### Three Layers of Capability
+
+| Layer | User Input | System Response |
+|-------|-----------|----------------|
+| **Filter** | \`status:passing orders:>=100\` | Filter data by structured conditions |
+| **Navigate** | \`create ticket\` | Jump to a page or open a modal |
+| **Free text** | \`kxccaqvx12\` | Full-text search across fields |
+
+### Why "Simple Yet Powerful"
+
+**Simple**: Users face a single input box. No dropdowns, no collapsible panels, no "advanced search" button.
+Learning cost: zero — if you can type, you can use it.
+
+**Powerful**: One search box handles filtering, navigation, and command execution.
+Power users can do everything via keyboard without touching the mouse.
+
+---
+
+## Architecture
+
+FilterChipBar uses a **headless + renderer** separation:
+
+\`\`\`
+useFilterChipBar()          ← Headless Hook (pure logic, zero UI deps)
+  ├── State: searchText / stat / dropdown / presets
+  ├── Parser: parseCurrentToken / parseQuery
+  ├── Keyboard: ↑↓ Enter Tab Esc Backspace
+  ├── Suggestions: autocomplete + fuzzy match + selected exclusion
+  └── Persistence: namespaced localStorage (presets + recent)
+
+FilterChipBar (shadcn)      ← Default renderer: Radix + Tailwind + lucide
+FilterChipBarAntd6          ← Adapter: Ant Design 6
+\`\`\`
+
+Any UI framework can adapt by consuming the \`useFilterChipBar()\` hook and rendering its own components.
+
+---
+
+## Search Syntax
+
+| Syntax | Meaning | Example |
+|--------|---------|---------|
+| \`key:value\` | Filter by field | \`Status:Passing\` |
+| \`-key:value\` | Exclude (negation) | \`-Status:Failing\` |
+| \`key:val1,val2\` | Multi-value | \`Status:Passing,Failing\` |
+| \`key:"two words"\` | Quote spaces | \`Name:"iPhone 15"\` |
+| \`key:>=100\` | Numeric compare | \`Orders:>=100\` |
+| \`key:100~200\` | Numeric range | \`Orders:100~200\` |
+| \`key:2024-01-01~2024-12-31\` | Date range | dateRange type |
+| free text | Non-key:value text | \`kxccaqvx12\` |
+| **space** | Separate conditions | \`Status:Passing Orders:>=100\` |
+
+---
+
+## 🌐 Language / 语言
+
+Use the **🌐 globe** toolbar button (top right) to switch documentation language.
+使用右上角 **🌐** 按钮切换文档语言。
+
+---
+
+<hr style="border: 2px solid #ddd; margin: 40px 0;" />
+
 # FilterChipBar — 搜索即入口
 
 > 搜索是人机交互的第一个入口。简单,而伟大。
@@ -201,7 +280,7 @@ const recentSearches: RecentSearch[] = [
 ];
 
 export const Default: Story = {
-  name: '默认状态',
+  name: 'Default / 默认状态',
   parameters: {
     docs: {
       description: {
@@ -214,7 +293,7 @@ export const Default: Story = {
 };
 
 export const WithInitialText: Story = {
-  name: '单个筛选条件',
+  name: 'Single Filter / 单个筛选条件',
   parameters: {
     docs: {
       description: {
@@ -230,7 +309,7 @@ export const WithInitialText: Story = {
 };
 
 export const WithMultipleFilters: Story = {
-  name: '多条件组合筛选',
+  name: 'Multiple Filters / 多条件组合筛选',
   parameters: {
     docs: {
       description: {
@@ -247,7 +326,7 @@ export const WithMultipleFilters: Story = {
 };
 
 export const FreeTextVskuSearch: Story = {
-  name: '自由文本搜索',
+  name: 'Free Text Search / 自由文本搜索',
   parameters: {
     docs: {
       description: {
@@ -264,7 +343,7 @@ export const FreeTextVskuSearch: Story = {
 };
 
 export const WithStatusCounts: Story = {
-  name: '状态栏 + 数量统计',
+  name: 'Status Bar + Counts / 状态栏 + 数量统计',
   parameters: {
     docs: {
       description: {
@@ -287,7 +366,7 @@ export const WithStatusCounts: Story = {
 };
 
 export const WithRecentHistory: Story = {
-  name: '搜索历史',
+  name: 'Recent History / 搜索历史',
   parameters: {
     docs: {
       description: {
@@ -313,7 +392,7 @@ export const WithRecentHistory: Story = {
 };
 
 export const FullWithCountsAndHistory: Story = {
-  name: '完整形态:筛选 + 状态 + 历史',
+  name: 'Full Demo / 完整形态',
   parameters: {
     docs: {
       description: {
@@ -346,7 +425,7 @@ export const FullWithCountsAndHistory: Story = {
 };
 
 export const DynamicOptionsLoading: Story = {
-  name: '动态选项加载中',
+  name: 'Dynamic Options Loading / 动态选项加载中',
   parameters: {
     docs: {
       description: {
@@ -363,7 +442,7 @@ export const DynamicOptionsLoading: Story = {
 };
 
 export const WithDynamicOptions: Story = {
-  name: '动态选项已加载',
+  name: 'Dynamic Options Loaded / 动态选项已加载',
   parameters: {
     docs: {
       description: {
@@ -392,7 +471,7 @@ export const WithDynamicOptions: Story = {
 };
 
 export const NegatedFilter: Story = {
-  name: '反选(排除)模式',
+  name: 'Negation / 反选(排除)模式',
   parameters: {
     docs: {
       description: {
@@ -409,7 +488,7 @@ export const NegatedFilter: Story = {
 };
 
 export const AutoSensingPaste: Story = {
-  name: '自动感知:多行粘贴 → 逗号分隔',
+  name: 'Auto-Sensing: Paste / 自动感知:多行粘贴',
   parameters: {
     docs: {
       description: {
@@ -429,7 +508,7 @@ export const AutoSensingPaste: Story = {
 };
 
 export const AutoQuotingInput: Story = {
-  name: '自动感知:input 类型自动加引号',
+  name: 'Auto-Quoting Input / 自动感知:input 加引号',
   parameters: {
     docs: {
       description: {
@@ -450,7 +529,7 @@ export const AutoQuotingInput: Story = {
 };
 
 export const WithRightExtra: Story = {
-  name: '右侧自定义操作区',
+  name: 'Right Extra / 右侧自定义操作区',
   parameters: {
     docs: {
       description: {
@@ -474,7 +553,7 @@ export const WithRightExtra: Story = {
 };
 
 export const CustomStatusOptions: Story = {
-  name: '自定义状态栏选项',
+  name: 'Custom Status Options / 自定义状态栏选项',
   parameters: {
     docs: {
       description: {
@@ -501,7 +580,7 @@ export const CustomStatusOptions: Story = {
 };
 
 export const WithoutStatusBar: Story = {
-  name: '无状态栏模式',
+  name: 'No Status Bar / 无状态栏模式',
   parameters: {
     docs: {
       description: {
@@ -517,7 +596,7 @@ export const WithoutStatusBar: Story = {
 };
 
 export const CustomPlaceholder: Story = {
-  name: '自定义占位文本',
+  name: 'Custom Placeholder / 自定义占位文本',
   parameters: {
     docs: {
       description: {
@@ -533,7 +612,7 @@ export const CustomPlaceholder: Story = {
 };
 
 export const WithImageSearch: Story = {
-  name: '以图搜图',
+  name: 'Image Search / 以图搜图',
   parameters: {
     docs: {
       description: {
@@ -570,7 +649,7 @@ const demoCommands: ActionCommand[] = [
 ];
 
 export const WithCommands: Story = {
-  name: '快捷操作 (Command Palette)',
+  name: 'Command Palette / 快捷操作',
   parameters: {
     docs: {
       description: {
