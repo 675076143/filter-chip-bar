@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "description": "搜索即入口 — Headless filter + command palette component for React",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/675076143/filter-chip-bar"
+  },
   "type": "module",
   "main": "./src/index.ts",
   "module": "./src/index.ts",
