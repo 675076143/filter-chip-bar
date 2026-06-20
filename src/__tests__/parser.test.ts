@@ -74,7 +74,7 @@ describe('parseQuery', () => {
 
   it('parses numberRange with range', () => {
     const { chips } = parseQuery('Orders:100~200', configs);
-    expect(chips.Orders).toEqual({ operation: '区间', value: 100, end: 200 });
+    expect(chips.Orders).toEqual({ operation: 'range', value: 100, end: 200 });
   });
 
   it('parses dateRange', () => {

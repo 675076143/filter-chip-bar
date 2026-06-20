@@ -84,7 +84,7 @@ export function parseQuery(
         const op = m[1] || '>=';
         const val = Number(m[2]);
         const end = m[3] ? Number(m[3]) : undefined;
-        chips[chipKey] = { operation: end !== undefined ? '区间' : op, value: val, end };
+        chips[chipKey] = { operation: end !== undefined ? 'range' : op, value: val, end };
       }
     } else if (config.type === 'dateRange') {
       const parts = rawValue.split('~');

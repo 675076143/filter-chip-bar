@@ -17,11 +17,11 @@ import { parseCurrentToken, parseQuery, type ParsedToken } from './parser';
 import { tokenizeSearchText } from './tokenize';
 
 const TYPE_HINTS: Record<string, string> = {
-  select: '选择',
-  multiSelect: '多选',
-  input: '输入',
-  dateRange: '日期',
-  numberRange: '数值',
+  select: 'Select',
+  multiSelect: 'Multi',
+  input: 'Text',
+  dateRange: 'Date',
+  numberRange: 'Number',
 };
 
 const ICON_OFFSET = 14 + 8 + 12;
@@ -459,10 +459,10 @@ export function useFilterChipBar({
     parsedToken.phase === 'filterValue' &&
     !!parsedToken.filterConfig?.dynamic;
 
-  const filteredHistory = recentSearches.filter((h) => {
+  const filteredHistory = useMemo(() => recentSearches.filter((h) => {
     if (!searchText) return true;
     return h.text.toLowerCase().includes(searchText.toLowerCase());
-  });
+  }), [recentSearches, searchText]);
 
   return {
     inputRef,
@@ -609,10 +609,10 @@ function buildSuggestions(
         { value: `${labelPrefix}>=`, label: '≥ 大于等于', hint: '如: >=100' },
         { value: `${labelPrefix}<=`, label: '≤ 小于等于', hint: '如: <=100' },
         { value: `${labelPrefix}=`, label: '= 精确匹配', hint: '如: =100' },
-        { value: `${labelPrefix}`, label: '~ 区间范围', hint: '如: 100~200' },
+        { value: `${labelPrefix}`, label: '~ Range', hint: 'e.g. 100~200' },
       ];
     } else if (cfg.type === 'dateRange' && !parsedToken.prefix) {
-      suggestions = [{ value: `${labelPrefix}`, label: '日期区间', hint: '2024-01-01~2024-12-31' }];
+      suggestions = [{ value: `${labelPrefix}`, label: 'Date range', hint: '2024-01-01~2024-12-31' }];
     }
   }
 

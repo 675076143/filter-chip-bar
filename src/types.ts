@@ -32,9 +32,9 @@ export interface RecentSearch {
 export interface FilterChipBarResult {
   searchText: string;
   chips: Record<string, unknown>;
-  /** 既不是 chip 也不是 stat 的纯文本片段 */
+  /** Text fragments that are neither chip conditions nor stat — used for full-text search */
   freeText: string[];
-  /** 当前选中的 status 值,-1 表示"全部" */
+  /** Current status value, -1 means "All" */
   stat: number;
 }
 
@@ -68,7 +68,7 @@ export type TextToken =
       truncated: boolean;
     };
 
-// 多页面使用 FilterChipBar 时必须传不同 namespace,否则预设/历史会串数据
+// Different pages MUST use different namespaces, otherwise presets/history will collide
 export function presetStorageKey(namespace: string): string {
   return `${namespace}:presets`;
 }
