@@ -588,7 +588,7 @@ export default function FilterChipBarAntd6({
                 </div>
               </div>
               <input
-                ref={fcb.inputRef}
+                ref={fcb.inputRef as React.RefObject<HTMLInputElement>}
                 type="text"
                 value={fcb.searchText}
                 onChange={fcb.handleInputChange}

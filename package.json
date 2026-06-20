@@ -25,7 +25,7 @@
     "dist",
     "src"
   ],
-  "sideEffects": false,
+  "sideEffects": ["**/*.css"],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
@@ -101,23 +101,23 @@
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",
     "access": "public",
-    "main": "./dist/index.js",
-    "module": "./dist/index.mjs",
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "exports": {
       ".": {
-        "import": "./dist/index.mjs",
-        "require": "./dist/index.js",
+        "import": "./dist/index.js",
+        "require": "./dist/index.cjs",
         "types": "./dist/index.d.ts"
       },
       "./headless": {
-        "import": "./dist/headless.mjs",
-        "require": "./dist/headless.js",
+        "import": "./dist/headless.js",
+        "require": "./dist/headless.cjs",
         "types": "./dist/headless.d.ts"
       },
       "./antd6": {
-        "import": "./dist/adapters/FilterChipBarAntd6.mjs",
-        "require": "./dist/adapters/FilterChipBarAntd6.js",
+        "import": "./dist/adapters/FilterChipBarAntd6.js",
+        "require": "./dist/adapters/FilterChipBarAntd6.cjs",
         "types": "./dist/adapters/FilterChipBarAntd6.d.ts"
       }
     }

@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import {
   Search,
   X,
@@ -87,6 +87,8 @@ export default function FilterChipBar({
     searchResultCount,
     searchLoading,
   });
+
+  const [copiedPresetId, setCopiedPresetId] = useState<string | null>(null);
 
   const renderTextToken = (t: TextToken, key: number): ReactNode => {
     if (t.type === 'whitespace') return <span key={key}>{t.text}</span>;
@@ -341,14 +343,20 @@ export default function FilterChipBar({
                   {p.searchText || '(empty)'}
                 </div>
               </div>
-              <Share2
-                className="size-3 text-muted-foreground/60 shrink-0 cursor-pointer hover:text-foreground transition-colors"
-                onClick={(ev: React.MouseEvent) => {
-                  ev.stopPropagation();
-                  const url = fcb.buildShareUrl(p);
-                  navigator.clipboard.writeText(url);
-                }}
-              />
+              {copiedPresetId === p.id ? (
+                <span className="text-[10px] text-green-600 shrink-0">Copied!</span>
+              ) : (
+                <Share2
+                  className="size-3 text-muted-foreground/60 shrink-0 cursor-pointer hover:text-foreground transition-colors"
+                  onClick={(ev: React.MouseEvent) => {
+                    ev.stopPropagation();
+                    const url = fcb.buildShareUrl(p);
+                    navigator.clipboard.writeText(url);
+                    setCopiedPresetId(p.id);
+                    setTimeout(() => setCopiedPresetId(null), 2000);
+                  }}
+                />
+              )}
               <Trash2
                 className="size-3 text-muted-foreground/60 shrink-0 cursor-pointer hover:text-destructive transition-colors"
                 onClick={(ev: React.MouseEvent) => {
