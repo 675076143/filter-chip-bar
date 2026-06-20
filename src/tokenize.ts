@@ -31,7 +31,7 @@ export function tokenizeSearchText(
     let isValueValid = isLabelValid && !!valueStr;
     if (isLabelValid && valueStr && (config.type === 'select' || config.type === 'multiSelect')) {
       const vals = valueStr.split(',').map((s) => s.trim()).filter(Boolean);
-      const opts = dynamicOptions?.[label] ?? config.options ?? [];
+      const opts = dynamicOptions?.[label] ?? [];
       isValueValid = vals.length > 0 && vals.every((v) => opts.some((o) => o.label === v));
     }
 

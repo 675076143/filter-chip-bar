@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback, useLayoutEffect, useMemo } fr
 import {
   type ChipConfig,
   type FilterOption,
+  type AsyncOptions,
   type SearchPreset,
   type RecentSearch,
   type FilterChipBarResult,
@@ -29,8 +30,6 @@ const ICON_OFFSET = 14 + 8 + 12;
 export interface UseFilterChipBarOptions {
   chipConfigs: ChipConfig[];
   storageNamespace: string;
-  dynamicOptions?: Record<string, FilterOption[]>;
-  dynamicOptionsLoading?: boolean;
   commands?: ActionCommand[];
   initialSearchText?: string;
   initialStat?: number;
@@ -88,8 +87,6 @@ export interface UseFilterChipBarReturn {
 export function useFilterChipBar({
   chipConfigs,
   storageNamespace,
-  dynamicOptions,
-  dynamicOptionsLoading,
   commands = [],
   initialSearchText = '',
   initialStat = -1,
@@ -111,22 +108,63 @@ export function useFilterChipBar({
   const [presetOpen, setPresetOpen] = useState(false);
   const [presets, setPresets] = useState<SearchPreset[]>([]);
   const [presetName, setPresetName] = useState('');
+  const [resolvedOptions, setResolvedOptions] = useState<Record<string, FilterOption[]>>({});
+  const [loadingLabels, setLoadingLabels] = useState<Set<string>>(new Set());
   const [recentSearches, setRecentSearches] = useState<RecentSearch[]>(() => loadRecent(storageNamespace));
   const pendingSearchRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const asyncConfigs = chipConfigs.filter(
+      (c): c is ChipConfig & { options: AsyncOptions } => typeof c.options === 'function',
+    );
+    asyncConfigs.forEach(async (config) => {
+      setLoadingLabels((prev) => new Set(prev).add(config.label));
+      try {
+        const result = await config.options();
+        if (!cancelled) {
+          setResolvedOptions((prev) => ({ ...prev, [config.label]: result }));
+        }
+      } catch {
+        // silently ignore fetch errors
+      } finally {
+        if (!cancelled) {
+          setLoadingLabels((prev) => {
+            const next = new Set(prev);
+            next.delete(config.label);
+            return next;
+          });
+        }
+      }
+    });
+    return () => { cancelled = true; };
+  }, [chipConfigs]);
+
+  const allOptions = useMemo(() => {
+    const merged: Record<string, FilterOption[]> = {};
+    for (const config of chipConfigs) {
+      if (Array.isArray(config.options)) {
+        merged[config.label] = config.options;
+      } else if (resolvedOptions[config.label]) {
+        merged[config.label] = resolvedOptions[config.label];
+      }
+    }
+    return merged;
+  }, [chipConfigs, resolvedOptions]);
 
   const cbRef = useRef(onFiltersChange);
   cbRef.current = onFiltersChange;
 
   const applyFilters = useCallback(
     (text: string, s: number) => {
-      const { chips, freeText } = parseQuery(text, chipConfigs, dynamicOptions);
+      const { chips, freeText } = parseQuery(text, chipConfigs, allOptions);
       const cleaned = Object.fromEntries(
         Object.entries(chips).filter(([, v]) => v !== undefined && v !== null && v !== ''),
       );
       cbRef.current?.({ searchText: text, chips: cleaned, freeText, stat: s });
       pendingSearchRef.current = text.trim() || null;
     },
-    [chipConfigs, dynamicOptions],
+    [chipConfigs, allOptions],
   );
 
   useEffect(() => {
@@ -205,11 +243,11 @@ export function useFilterChipBar({
   const textBeforeToken = lastSpaceIdx === -1 ? '' : searchText.slice(0, lastSpaceIdx + 1);
   const dropdownOffsetX = ICON_OFFSET + measureTextWidth(textBeforeToken);
   const activeFilterCount = searchText.split(/\s+/).filter(Boolean).length;
-  const textTokens = useMemo(() => tokenizeSearchText(searchText, chipConfigs, dynamicOptions), [searchText, chipConfigs, dynamicOptions]);
+  const textTokens = useMemo(() => tokenizeSearchText(searchText, chipConfigs, allOptions), [searchText, chipConfigs, allOptions]);
 
   const suggestions = useMemo(
-    () => buildSuggestions(searchText, chipConfigs, dynamicOptions, parsedToken, lastSpaceIdx, commands),
-    [searchText, chipConfigs, dynamicOptions, parsedToken, lastSpaceIdx, commands],
+    () => buildSuggestions(searchText, chipConfigs, allOptions, parsedToken, lastSpaceIdx, commands),
+    [searchText, chipConfigs, allOptions, parsedToken, lastSpaceIdx, commands],
   );
 
   const handleSavePreset = useCallback(() => {
@@ -454,10 +492,10 @@ export function useFilterChipBar({
     setInputScrollLeft(scrollLeft);
   }, []);
 
-  const isLoadingDynamic =
-    !!dynamicOptionsLoading &&
-    parsedToken.phase === 'filterValue' &&
-    !!parsedToken.filterConfig?.dynamic;
+  const isLoadingDynamic = useMemo(() => {
+    if (parsedToken.phase !== 'filterValue' || !parsedToken.filterConfig) return false;
+    return loadingLabels.has(parsedToken.filterConfig.label);
+  }, [parsedToken, loadingLabels]);
 
   const filteredHistory = useMemo(() => recentSearches.filter((h) => {
     if (!searchText) return true;
@@ -507,7 +545,7 @@ export function useFilterChipBar({
 function buildSuggestions(
   searchText: string,
   chipConfigs: ChipConfig[],
-  dynamicOptions: Record<string, FilterOption[]> | undefined,
+  resolvedOptions: Record<string, FilterOption[]>,
   parsedToken: ParsedToken,
   lastSpaceIdx: number,
   commands: ActionCommand[],
@@ -576,7 +614,7 @@ function buildSuggestions(
     });
     suggestions.push({ value: '', label: '', isDivider: true });
 
-    const opts = dynamicOptions?.[cfg.label] ?? cfg.options ?? [];
+    const opts = resolvedOptions[cfg.label] ?? [];
     const lower = parsedToken.prefix.toLowerCase();
 
     let selectedLabels: string[] = [];

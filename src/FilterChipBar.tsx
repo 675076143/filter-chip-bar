@@ -43,8 +43,6 @@ export interface FilterChipBarProps {
   statusOptions?: FilterOption[];
   statusCounts?: Record<number, number>;
   rightExtra?: ReactNode;
-  dynamicOptions?: Record<string, FilterOption[]>;
-  dynamicOptionsLoading?: boolean;
   initialSearchText?: string;
   initialStat?: number;
   commands?: ActionCommand[];
@@ -63,8 +61,6 @@ export default function FilterChipBar({
   statusOptions,
   statusCounts,
   rightExtra,
-  dynamicOptions,
-  dynamicOptionsLoading,
   initialSearchText = '',
   initialStat = -1,
   commands,
@@ -78,8 +74,6 @@ export default function FilterChipBar({
   const fcb = useFilterChipBar({
     chipConfigs,
     storageNamespace,
-    dynamicOptions,
-    dynamicOptionsLoading,
     commands,
     initialSearchText,
     initialStat,

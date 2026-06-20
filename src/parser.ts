@@ -58,22 +58,23 @@ export function parseQuery(
 
     const chipKey = isNegated ? `not_${label}` : label;
 
+    const resolvedOpts = dynamicOptions?.[label] ?? [];
+
     if (config.type === 'select') {
-      const opts = dynamicOptions?.[label] ?? config.options ?? [];
       if (rawValue.includes(',')) {
         const parts = rawValue.split(',').map((s) => s.trim()).filter(Boolean);
         const values = parts
-          .map((p) => opts.find((o) => o.label === p)?.value)
+          .map((p) => resolvedOpts.find((o) => o.label === p)?.value)
           .filter((v): v is string | number => v !== undefined);
         if (values.length > 0) chips[chipKey] = values;
       } else {
-        const opt = opts.find((o) => o.label === rawValue);
+        const opt = resolvedOpts.find((o) => o.label === rawValue);
         if (opt) chips[chipKey] = opt.value;
       }
-    } else if (config.type === 'multiSelect' && config.options) {
+    } else if (config.type === 'multiSelect') {
       const parts = rawValue.split(',').map((s) => s.trim()).filter(Boolean);
       const values = parts
-        .map((p) => config.options!.find((o) => o.label === p)?.value)
+        .map((p) => resolvedOpts.find((o) => o.label === p)?.value)
         .filter((v): v is string | number => v !== undefined);
       if (values.length > 0) chips[chipKey] = values;
     } else if (config.type === 'input') {

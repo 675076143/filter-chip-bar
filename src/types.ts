@@ -5,14 +5,15 @@ export interface FilterOption {
 
 export type FilterType = 'select' | 'multiSelect' | 'input' | 'dateRange' | 'numberRange';
 
+export type AsyncOptions = () => Promise<FilterOption[]>;
+
 export interface ChipConfig {
   type: FilterType;
   label: string;
-  options?: FilterOption[];
+  options?: FilterOption[] | AsyncOptions;
   initialOperator?: string;
   precision?: number;
   min?: number;
-  dynamic?: boolean;
 }
 
 export interface SearchPreset {

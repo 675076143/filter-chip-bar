@@ -1,6 +1,7 @@
 export {
   type FilterOption,
   type FilterType,
+  type AsyncOptions,
   type ChipConfig,
   type SearchPreset,
   type RecentSearch,
