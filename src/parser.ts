@@ -8,6 +8,20 @@ export interface ParsedToken {
   negated?: boolean;
 }
 
+export function matchConfig(token: string, chipConfigs: ChipConfig[]): { config: ChipConfig; valuePart: string } | null {
+  for (const config of chipConfigs) {
+    if (config.prefix && token.startsWith(config.prefix)) {
+      return { config, valuePart: token.slice(config.prefix.length) };
+    }
+  }
+  const colonIdx = token.indexOf(':');
+  if (colonIdx === -1) return null;
+  const label = token.slice(0, colonIdx);
+  const valuePart = token.slice(colonIdx + 1);
+  const config = chipConfigs.find((f) => f.label === label || f.aliases?.includes(label));
+  return config ? { config, valuePart } : null;
+}
+
 export function parseCurrentToken(text: string, chipConfigs: ChipConfig[]): ParsedToken {
   const lastSpaceIdx = text.lastIndexOf(' ');
   let token = lastSpaceIdx === -1 ? text : text.slice(lastSpaceIdx + 1);
@@ -16,19 +30,19 @@ export function parseCurrentToken(text: string, chipConfigs: ChipConfig[]): Pars
   const isNegated = token.startsWith('-');
   if (isNegated) token = token.slice(1);
 
-  const colonIdx = token.indexOf(':');
-  if (colonIdx === -1) return { phase: 'filterName', prefix: token, negated: isNegated };
-
-  const label = token.slice(0, colonIdx);
-  const valuePart = token.slice(colonIdx + 1);
-  const config = chipConfigs.find((f) => f.label === label || f.aliases?.includes(label));
-
-  if (config?.type === 'multiSelect' || config?.type === 'select') {
-    const lastComma = valuePart.lastIndexOf(',');
-    const currentPart = lastComma >= 0 ? valuePart.slice(lastComma + 1) : valuePart;
-    return { phase: 'filterValue', prefix: currentPart, filterConfig: config, negated: isNegated };
+  const matched = matchConfig(token, chipConfigs);
+  if (matched) {
+    const { config, valuePart } = matched;
+    if (config.type === 'multiSelect' || config.type === 'select') {
+      const lastComma = valuePart.lastIndexOf(',');
+      const currentPart = lastComma >= 0 ? valuePart.slice(lastComma + 1) : valuePart;
+      return { phase: 'filterValue', prefix: currentPart, filterConfig: config, negated: isNegated };
+    }
+    return { phase: 'freeText', prefix: valuePart, filterConfig: config, negated: isNegated };
   }
-  return { phase: 'freeText', prefix: valuePart, filterConfig: config, negated: isNegated };
+
+  if (!token.includes(':')) return { phase: 'filterName', prefix: token, negated: isNegated };
+  return { phase: 'freeText', prefix: token, negated: isNegated };
 }
 
 export function parseQuery(
@@ -42,46 +56,43 @@ export function parseQuery(
 
   for (const token of tokens) {
     const isNegated = token.startsWith('-');
-    const cleanToken = isNegated ? token.slice(1) : token;
-    const colonIdx = cleanToken.indexOf(':');
-    if (colonIdx === -1) {
+    let cleanToken = isNegated ? token.slice(1) : token;
+
+    const matched = matchConfig(cleanToken, chipConfigs);
+    if (!matched) {
       freeText.push(token);
       continue;
     }
-    const label = cleanToken.slice(0, colonIdx);
-    const rawValue = cleanToken.slice(colonIdx + 1).replace(/^["']|["']$/g, '');
-    const config = chipConfigs.find((f) => f.label === label || f.aliases?.includes(label));
-    if (!config) {
-      freeText.push(token);
-      continue;
-    }
+
+    const { config, valuePart: rawValue } = matched;
+    rawValue.replace(/^["']|["']$/g, '');
 
     const canonicalLabel = config.label;
     const chipKey = isNegated ? `not_${canonicalLabel}` : canonicalLabel;
-
     const resolvedOpts = resolvedOptions?.[canonicalLabel] ?? [];
+    const cleanRawValue = rawValue.replace(/^["']|["']$/g, '');
 
     if (config.type === 'select') {
-      if (rawValue.includes(',')) {
-        const parts = rawValue.split(',').map((s) => s.trim()).filter(Boolean);
+      if (cleanRawValue.includes(',')) {
+        const parts = cleanRawValue.split(',').map((s) => s.trim()).filter(Boolean);
         const values = parts
           .map((p) => resolvedOpts.find((o) => o.label === p)?.value)
           .filter((v): v is string | number => v !== undefined);
         if (values.length > 0) chips[chipKey] = values;
       } else {
-        const opt = resolvedOpts.find((o) => o.label === rawValue);
+        const opt = resolvedOpts.find((o) => o.label === cleanRawValue);
         if (opt) chips[chipKey] = opt.value;
       }
     } else if (config.type === 'multiSelect') {
-      const parts = rawValue.split(',').map((s) => s.trim()).filter(Boolean);
+      const parts = cleanRawValue.split(',').map((s) => s.trim()).filter(Boolean);
       const values = parts
         .map((p) => resolvedOpts.find((o) => o.label === p)?.value)
         .filter((v): v is string | number => v !== undefined);
       if (values.length > 0) chips[chipKey] = values;
     } else if (config.type === 'input') {
-      if (rawValue) chips[chipKey] = rawValue;
+      if (cleanRawValue) chips[chipKey] = cleanRawValue;
     } else if (config.type === 'numberRange') {
-      const m = rawValue.match(/^(>=|<=|=)?\s*(\d+(?:\.\d+)?)(?:~(\d+(?:\.\d+)?))?$/);
+      const m = cleanRawValue.match(/^(>=|<=|=)?\s*(\d+(?:\.\d+)?)(?:~(\d+(?:\.\d+)?))?$/);
       if (m) {
         const op = m[1] || '>=';
         const val = Number(m[2]);
@@ -89,7 +100,7 @@ export function parseQuery(
         chips[chipKey] = { operation: end !== undefined ? 'range' : op, value: val, end };
       }
     } else if (config.type === 'dateRange') {
-      const parts = rawValue.split('~');
+      const parts = cleanRawValue.split('~');
       if (parts.length === 2) {
         const ds = dayjs(parts[0].trim());
         const de = dayjs(parts[1].trim());

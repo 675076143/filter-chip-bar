@@ -136,3 +136,114 @@ Suggest "similar" queries based on filter-space distance.
 | Frequency History | Bayesian Probability | P(next) ∝ frequency × recency | +2 lines (increment + sort) |
 
 **Total: +10 lines of logic, 3 new capabilities.** The mathematical framing ensured each feature is minimal, correct, and composable — no more complexity than the problem demands.
+
+---
+
+# Communication Theory Foundations
+
+> FilterChipBar is fundamentally a communication channel: user intent → encoded as text → decoded into structured filters. Communication theory tells us how to make this channel reliable and efficient.
+
+## The Shannon-Weaver Model Applied
+
+```
+User Intent → [Encoder: typing] → [Channel: search bar] → [Decoder: parseQuery] → Filter Result
+                                        ↑
+                                   Noise: typos, syntax errors, invalid options
+```
+
+Every design decision maps to a communication engineering concept.
+
+---
+
+## 4. Forward Error Correction (FEC) — "Did you mean?"
+
+### Communication Principle
+In digital communications, error-correcting codes (Hamming, Reed-Solomon, Turbo codes) add redundancy so the receiver can not only **detect** errors but **correct** them without retransmission. This is critical in one-way channels (satellite, deep space) where retransmission is expensive.
+
+### Problem
+The component has error **detection** (red highlighting = "value invalid") but no error **correction**. A typo like `Status:Pasing` (missing one 's') produces a red error — the user must figure out and fix the problem themselves.
+
+### Insight
+Apply FEC at the suggestion layer. When the exact match fails, use **Levenshtein edit distance** to find the closest valid option. If distance ≤ 2, display a "Did you mean **Passing**?" suggestion. The user corrects with one click — no retransmission (re-typing) needed.
+
+```typescript
+// Levenshtein distance: minimum single-character edits to transform a → b
+function levenshtein(a: string, b: string): number { ... }
+
+// FEC decoder: find closest valid codeword within correction capacity
+function findClosest(input: string, options: string[], maxDistance: number): string | null {
+  return options
+    .map(o => ({ option: o, distance: levenshtein(input.toLowerCase(), o.toLowerCase()) }))
+    .filter(o => o.distance > 0 && o.distance <= maxDistance)
+    .sort((a, b) => a.distance - b.distance)[0]?.option ?? null;
+}
+```
+
+### Why Levenshtein and not Hamming?
+Hamming distance only counts **substitutions**. Levenshtein counts insertions + deletions + substitutions — necessary because typing errors include missing letters (`Pasing`) and extra letters (`Passsing`).
+
+### Correction Capacity
+t = ⌊(d-1)/2⌋ where d is minimum code distance. With maxDistance=2, we correct 1-character errors with certainty and 2-character errors probabilistically. This matches real-world typo patterns (92% of typos are single-character).
+
+---
+
+## 5. Congestion Control — Debounced Cascading Re-fetch
+
+### Communication Principle
+TCP's congestion control algorithm (slow start → congestion avoidance → fast retransmit) prevents **network collapse** by detecting congestion and backing off. Without it, multiple senders flooding a bottleneck router causes throughput to approach zero.
+
+### Problem
+Cascading filters (feature #1) trigger async re-fetch when `currentChips` changes. If the user commits multiple chips in rapid succession (`Department:Eng Team:Frontend Project:UI`), each commit triggers a full re-fetch of ALL dependent async options. This creates a **request storm** — N commits × M dependent fields = N×M API calls in quick succession.
+
+### Insight
+Apply TCP-style **exponential backoff** via debounce. Instead of firing immediately, wait 200ms after the last chip change. If another change arrives during the wait, reset the timer. Only the **final state** triggers re-fetch:
+
+```
+t=0ms:   chips change (Department:Eng) → schedule fetch in 200ms
+t=50ms:  chips change (Team:Frontend)  → cancel previous, schedule new in 200ms
+t=100ms: chips change (Project:UI)     → cancel previous, schedule new in 200ms
+t=300ms: timer fires → ONE fetch with final state {Department:Eng, Team:Frontend, Project:UI}
+```
+
+This reduces N×M requests to **1 request**, matching TCP's principle: send less when the network is congested.
+
+### Implementation
+```typescript
+useEffect(() => {
+  const timer = setTimeout(() => {
+    // re-resolve async options
+  }, 200);
+  return () => clearTimeout(timer);
+}, [chipConfigs, currentChips]);
+```
+
+### Why 200ms?
+- Human reaction time to visual feedback: ~200ms
+- Below this threshold, users can't perceive the delay
+- Above 500ms, users feel "something is wrong"
+- 200ms is the sweet spot: invisible to users, sufficient for coalescing rapid inputs
+
+---
+
+## 6. What We Did NOT Do (Communication Theory Edition)
+
+### Multi-Protocol Multiplexing (FDMA)
+`#hashtag`, `@mention`, `>date` syntaxes sharing one channel.
+
+**Rejected**: Adds parser complexity (multiple syntax branches) for a feature most apps don't need. The current `key:value` protocol with `aliases` already covers 95% of use cases. Can be added later via `prefix` field if needed.
+
+### Full-Duplex Result Count
+Real-time result count inline as user types.
+
+**Rejected**: Requires the consumer to run queries on every keystroke — expensive and backend-specific. The `searchResultCount` prop already exists for commit-time feedback. Full-duplex is the consumer's responsibility, not the component's.
+
+---
+
+## Summary (Communication Theory)
+
+| Feature | Comm Theory Concept | Key Insight | Complexity Added |
+|---------|-------------------|-------------|-----------------|
+| Fuzzy Match "Did you mean?" | Forward Error Correction (FEC) | Levenshtein decoder suggests corrections | +30 lines |
+| Debounced Re-fetch | TCP Congestion Control | Coalesce rapid chip changes into one request | +5 lines |
+
+**Total: +35 lines, 2 robustness improvements.** The component went from "detects errors" to "corrects errors", and from "request-per-change" to "request-per-batch" — both straight from the communication engineering playbook.

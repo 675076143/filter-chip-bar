@@ -16,6 +16,7 @@ import {
 } from './types';
 import { parseCurrentToken, parseQuery, type ParsedToken } from './parser';
 import { tokenizeSearchText } from './tokenize';
+import { findClosest } from './fuzzy';
 
 const TYPE_HINTS: Record<string, string> = {
   select: 'Select',
@@ -120,29 +121,31 @@ export function useFilterChipBar({
 
   useEffect(() => {
     let cancelled = false;
-    const asyncConfigs = chipConfigs.filter(
-      (c): c is ChipConfig & { options: AsyncOptions } => typeof c.options === 'function',
-    );
-    asyncConfigs.forEach(async (config) => {
-      setLoadingLabels((prev) => new Set(prev).add(config.label));
-      try {
-        const result = await config.options(currentChips);
-        if (!cancelled) {
-          setResolvedOptions((prev) => ({ ...prev, [config.label]: result }));
+    const timer = setTimeout(() => {
+      const asyncConfigs = chipConfigs.filter(
+        (c): c is ChipConfig & { options: AsyncOptions } => typeof c.options === 'function',
+      );
+      asyncConfigs.forEach(async (config) => {
+        setLoadingLabels((prev) => new Set(prev).add(config.label));
+        try {
+          const result = await config.options(currentChips);
+          if (!cancelled) {
+            setResolvedOptions((prev) => ({ ...prev, [config.label]: result }));
+          }
+        } catch {
+          // silently ignore fetch errors
+        } finally {
+          if (!cancelled) {
+            setLoadingLabels((prev) => {
+              const next = new Set(prev);
+              next.delete(config.label);
+              return next;
+            });
+          }
         }
-      } catch {
-        // silently ignore fetch errors
-      } finally {
-        if (!cancelled) {
-          setLoadingLabels((prev) => {
-            const next = new Set(prev);
-            next.delete(config.label);
-            return next;
-          });
-        }
-      }
-    });
-    return () => { cancelled = true; };
+      });
+    }, 200);
+    return () => { cancelled = true; clearTimeout(timer); };
   }, [chipConfigs, currentChips]);
 
   const allOptions = useMemo(() => {
@@ -621,21 +624,26 @@ function buildSuggestions(
 
     suggestions.push({
       value: '',
-      label: isNeg ? '取消排除' : '排除',
-      hint: isNeg ? '恢复正常' : '反选模式',
+      label: isNeg ? 'Remove exclusion' : 'Exclude',
+      hint: isNeg ? 'Restore normal' : 'Negation mode',
       action: 'toggleNegate' as const,
     });
     suggestions.push({ value: '', label: '', isDivider: true });
 
     const opts = resolvedOptions[cfg.label] ?? [];
     const lower = parsedToken.prefix.toLowerCase();
+    const currentToken = lastSpaceIdx === -1 ? searchText : searchText.slice(lastSpaceIdx + 1);
+    const isPrefixMode = !!(cfg.prefix && currentToken.replace(/^-/, '').startsWith(cfg.prefix));
+    const valueFormat = (val: string) => isPrefixMode ? `${cfg.prefix}${val}` : `${cfg.label}:${val}`;
 
     let selectedLabels: string[] = [];
     if (cfg.type === 'multiSelect' || cfg.type === 'select') {
       let token = lastSpaceIdx === -1 ? searchText : searchText.slice(lastSpaceIdx + 1);
       if (token.startsWith('-')) token = token.slice(1);
-      const colonIdx = token.indexOf(':');
-      const fullValueStr = token.slice(colonIdx + 1);
+      if (cfg.prefix && token.startsWith(cfg.prefix)) {
+        token = token.slice(cfg.prefix.length);
+      }
+      const fullValueStr = token.includes(':') ? token.slice(token.indexOf(':') + 1) : token;
       const parts = fullValueStr.split(',').map((s) => s.trim());
       const endsWithComma = fullValueStr.endsWith(',');
       selectedLabels = endsWithComma
@@ -648,10 +656,27 @@ function buildSuggestions(
         .filter((o) => !selectedLabels.includes(o.label))
         .filter((o) => !lower || o.label.toLowerCase().includes(lower))
         .map((o) => {
-          const prefix = selectedLabels.length > 0 ? selectedLabels.join(',') + ',' : '';
-          return { value: `${neg}${cfg.label}:${prefix}${o.label}`, label: o.label };
+          const selPrefix = selectedLabels.length > 0 ? selectedLabels.join(',') + ',' : '';
+          return { value: `${neg}${valueFormat(`${selPrefix}${o.label}`)}`, label: o.label };
         }),
     );
+
+    if (lower && (cfg.type === 'select' || cfg.type === 'multiSelect')) {
+      const hasExact = opts.some((o) => !selectedLabels.includes(o.label) && o.label.toLowerCase().includes(lower));
+      if (!hasExact) {
+        const closest = findClosest(parsedToken.prefix, opts.map((o) => o.label), 2);
+        if (closest && !selectedLabels.includes(closest)) {
+          const selPrefix = selectedLabels.length > 0 ? selectedLabels.join(',') + ',' : '';
+          suggestions.push({ value: '', label: '', isDivider: true });
+          suggestions.push({
+            value: `${neg}${valueFormat(`${selPrefix}${closest}`)}`,
+            label: closest,
+            hint: 'Did you mean?',
+            didYouMean: closest,
+          });
+        }
+      }
+    }
   } else if (parsedToken.phase === 'freeText' && parsedToken.filterConfig) {
     const cfg = parsedToken.filterConfig;
     const labelPrefix = cfg.label + ':';

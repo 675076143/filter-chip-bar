@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { parseQuery, parseCurrentToken } from '../parser';
 import { tokenizeSearchText } from '../tokenize';
+import { levenshtein, findClosest } from '../fuzzy';
 import type { ChipConfig, TextToken, FilterOption } from '../types';
 
 const configs: ChipConfig[] = [
@@ -278,5 +279,86 @@ describe('tokenizeSearchText', () => {
     const tokens = tokenizeSearchText('Status:Passing Orders:>=100', configs, opts);
     const wsTokens = tokens.filter((t: TextToken) => t.type === 'whitespace');
     expect(wsTokens).toHaveLength(1);
+  });
+});
+
+describe('fuzzy matching (FEC)', () => {
+  it('calculates levenshtein distance correctly', () => {
+    expect(levenshtein('', '')).toBe(0);
+    expect(levenshtein('abc', 'abc')).toBe(0);
+    expect(levenshtein('abc', 'abd')).toBe(1);
+    expect(levenshtein('Pasing', 'Passing')).toBe(1);
+    expect(levenshtein('flaw', 'lawn')).toBe(2);
+  });
+
+  it('is case-insensitive', () => {
+    expect(levenshtein('ABC', 'abc')).toBe(0);
+  });
+
+  it('finds closest match within distance', () => {
+    expect(findClosest('Pasing', ['Pending', 'Passing', 'Failing'], 2)).toBe('Passing');
+  });
+
+  it('returns null when no match within distance', () => {
+    expect(findClosest('xyz', ['Alpha', 'Beta', 'Gamma'], 2)).toBeNull();
+  });
+
+  it('returns null for exact match (distance 0 excluded)', () => {
+    expect(findClosest('Alpha', ['Alpha', 'Beta'], 2)).toBeNull();
+  });
+});
+
+describe('multi-protocol prefix', () => {
+  const prefixConfigs: ChipConfig[] = [
+    {
+      type: 'multiSelect',
+      label: 'Tags',
+      prefix: '#',
+      options: [
+        { value: 'urgent', label: 'urgent' },
+        { value: 'bug', label: 'bug' },
+      ],
+    },
+    {
+      type: 'select',
+      label: 'Assignee',
+      prefix: '@',
+      options: [
+        { value: 'zhang', label: 'zhang' },
+        { value: 'li', label: 'li' },
+      ],
+    },
+  ];
+  const prefixOpts: Record<string, FilterOption[]> = {
+    Tags: [{ value: 'urgent', label: 'urgent' }, { value: 'bug', label: 'bug' }],
+    Assignee: [{ value: 'zhang', label: 'zhang' }, { value: 'li', label: 'li' }],
+  };
+
+  it('parses # prefix as Tags', () => {
+    const { chips } = parseQuery('#urgent', prefixConfigs, prefixOpts);
+    expect(chips.Tags).toEqual(['urgent']);
+  });
+
+  it('parses @ prefix as Assignee', () => {
+    const { chips } = parseQuery('@zhang', prefixConfigs, prefixOpts);
+    expect(chips.Assignee).toBe('zhang');
+  });
+
+  it('parses negated prefix', () => {
+    const { chips } = parseQuery('-#bug', prefixConfigs, prefixOpts);
+    expect(chips['not_Tags']).toEqual(['bug']);
+  });
+
+  it('key:value still works alongside prefix', () => {
+    const { chips } = parseQuery('Tags:urgent @li', prefixConfigs, prefixOpts);
+    expect(chips.Tags).toEqual(['urgent']);
+    expect(chips.Assignee).toBe('li');
+  });
+
+  it('parseCurrentToken detects prefix mode', () => {
+    const result = parseCurrentToken('#ur', prefixConfigs);
+    expect(result.phase).toBe('filterValue');
+    expect(result.prefix).toBe('ur');
+    expect(result.filterConfig?.label).toBe('Tags');
   });
 });

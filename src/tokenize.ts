@@ -1,4 +1,5 @@
 import type { ChipConfig, FilterOption, TextToken } from './types';
+import { matchConfig } from './parser';
 
 const TRUNCATE_LIMIT = 40;
 
@@ -15,8 +16,9 @@ export function tokenizeSearchText(
 
     const isNegated = part.startsWith('-');
     const cleanPart = isNegated ? part.slice(1) : part;
-    const colonIdx = cleanPart.indexOf(':');
-    if (colonIdx === -1) {
+
+    const matched = matchConfig(cleanPart, chipConfigs);
+    if (!matched) {
       return {
         type: 'freeText',
         text: part,
@@ -24,23 +26,29 @@ export function tokenizeSearchText(
       };
     }
 
-    const label = cleanPart.slice(0, colonIdx);
-    const valueStr = cleanPart.slice(colonIdx + 1);
-    const config = chipConfigs.find((f) => f.label === label || f.aliases?.includes(label));
-    const isLabelValid = !!config;
-    let isValueValid = isLabelValid && !!valueStr;
-    if (isLabelValid && valueStr && (config.type === 'select' || config.type === 'multiSelect')) {
-      const vals = valueStr.split(',').map((s) => s.trim()).filter(Boolean);
-      const opts = resolvedOptions?.[config.label] ?? [];
-      isValueValid = vals.length > 0 && vals.every((v) => opts.some((o) => o.label === v));
-    }
+    const { config, valuePart: valueStr } = matched;
+    const displayLabel = config.prefix && cleanPart.startsWith(config.prefix)
+      ? `${config.prefix}${config.label.toLowerCase()}`
+      : cleanPart.includes(':')
+        ? cleanPart.slice(0, cleanPart.indexOf(':'))
+        : config.label;
+
+    const isValueValid = (() => {
+      if (!valueStr) return false;
+      if (config.type === 'select' || config.type === 'multiSelect') {
+        const vals = valueStr.split(',').map((s) => s.trim()).filter(Boolean);
+        const opts = resolvedOptions?.[config.label] ?? [];
+        return vals.length > 0 && vals.every((v) => opts.some((o) => o.label === v));
+      }
+      return true;
+    })();
 
     return {
-      type: 'chip',
-      label,
+      type: 'chip' as const,
+      label: displayLabel,
       value: valueStr,
       isNegated,
-      isLabelValid,
+      isLabelValid: true,
       isValueValid,
       truncated: valueStr.length > TRUNCATE_LIMIT,
     };

@@ -17,6 +17,7 @@ export interface ChipConfig {
   type: FilterType;
   label: string;
   aliases?: string[];
+  prefix?: string;
   options?: FilterOption[] | AsyncOptions;
   initialOperator?: string;
   precision?: number;
@@ -55,6 +56,7 @@ export interface SuggestionItem {
   isDivider?: boolean;
   isHeader?: boolean;
   command?: ActionCommand;
+  didYouMean?: string;
 }
 
 export interface ActionCommand {

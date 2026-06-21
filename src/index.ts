@@ -23,8 +23,9 @@ export {
   loadRecent,
   saveRecent,
 } from './types';
-export { parseCurrentToken, parseQuery, type ParsedToken } from './parser';
+export { parseCurrentToken, parseQuery, matchConfig, type ParsedToken } from './parser';
 export { tokenizeSearchText, truncate } from './tokenize';
+export { levenshtein, findClosest } from './fuzzy';
 export {
   useFilterChipBar,
   type UseFilterChipBarOptions,
