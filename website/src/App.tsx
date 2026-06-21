@@ -17,6 +17,18 @@ const i18n = {
     docsLinks: ['Storybook Docs', 'README (EN)', 'Design Notes'],
     featuresHeading: 'Features',
     disciplinesHeading: '7 Features · 6 Disciplines',
+    syntaxHeading: 'Search Syntax',
+    syntaxExamples: [
+      { syntax: 'key:value', desc: 'Filter by field', example: 'Status:Passing' },
+      { syntax: '-key:value', desc: 'Exclude (negation)', example: '-Status:Pending' },
+      { syntax: 'key:val1,val2', desc: 'Multi-value', example: 'Status:Passing,Failing' },
+      { syntax: 'alias:value', desc: 'Shortcut (alias)', example: 'st:pass' },
+      { syntax: '#tag', desc: 'Prefix syntax', example: '#urgent' },
+      { syntax: 'key:>=100', desc: 'Numeric compare', example: 'Orders:>=500' },
+      { syntax: 'key:100~200', desc: 'Numeric range', example: 'Orders:100~500' },
+      { syntax: '-key:val', desc: 'Typo → auto-correct', example: 'Status:Pasing → Passing' },
+      { syntax: 'free text', desc: 'Full-text search', example: 'kxccaqvx12' },
+    ],
     footer: 'MIT License · Built with React + Radix UI + Tailwind CSS · 48 tests · 6 disciplines',
     features: [
       { title: 'Structured Filtering', desc: 'Type Status:Passing to filter by field. Negation with -Status:Pending.', icon: '🔍' },
@@ -51,6 +63,18 @@ const i18n = {
     docsLinks: ['Storybook 文档', 'README (中文)', '设计笔记'],
     featuresHeading: '特性',
     disciplinesHeading: '7 个特性 · 6 个学科',
+    syntaxHeading: '搜索语法',
+    syntaxExamples: [
+      { syntax: 'key:value', desc: '按字段筛选', example: 'Status:Passing' },
+      { syntax: '-key:value', desc: '排除匹配项', example: '-Status:Pending' },
+      { syntax: 'key:val1,val2', desc: '多值选择', example: 'Status:Passing,Failing' },
+      { syntax: 'alias:value', desc: '别名简写', example: 'st:pass' },
+      { syntax: '#tag', desc: '前缀语法', example: '#urgent' },
+      { syntax: 'key:>=100', desc: '数值比较', example: 'Orders:>=500' },
+      { syntax: 'key:100~200', desc: '数值区间', example: 'Orders:100~500' },
+      { syntax: '笔误', desc: '自动纠错', example: 'Status:Pasing → Passing' },
+      { syntax: '自由文本', desc: '全文搜索', example: 'kxccaqvx12' },
+    ],
     footer: 'MIT 协议 · 基于 React + Radix UI + Tailwind CSS · 48 个测试 · 6 个学科',
     features: [
       { title: '结构化筛选', desc: '输入 Status:Passing 按字段筛选。-Status:Pending 排除匹配。', icon: '🔍' },
@@ -276,6 +300,31 @@ function App() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+
+        <div className="w-full max-w-3xl mt-12">
+          <h2 className="text-sm font-semibold text-[hsl(var(--muted-foreground))] uppercase tracking-wide text-center mb-6">
+            {t.syntaxHeading}
+          </h2>
+          <div className="rounded-lg border border-[hsl(var(--border))] overflow-hidden">
+            <table className="w-full text-xs">
+              <tbody>
+                {t.syntaxExamples.map((row, i) => (
+                  <tr key={i} className={i % 2 === 0 ? 'bg-[hsl(var(--muted))]/40' : ''}>
+                    <td className="px-4 py-2.5 font-mono text-[hsl(var(--foreground))] whitespace-nowrap">
+                      {row.syntax}
+                    </td>
+                    <td className="px-4 py-2.5 text-[hsl(var(--muted-foreground))]">
+                      {row.desc}
+                    </td>
+                    <td className="px-4 py-2.5 font-mono text-[hsl(var(--primary))] whitespace-nowrap">
+                      {row.example}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
 
