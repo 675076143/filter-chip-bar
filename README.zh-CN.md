@@ -86,9 +86,9 @@ function App() {
       chipConfigs={chipConfigs}
       storageNamespace="my-page"
       onFiltersChange={(result: FilterChipBarResult) => {
-        console.log(result.chips, result.freeText, result.stat);
+        console.log(result.chips, result.freeText, result.tab);
       }}
-      statusOptions={[
+      tabs={[
         { value: -1, label: '全部' },
         { value: 0, label: '未审核' },
         { value: 1, label: '通过' },
@@ -220,18 +220,15 @@ function MyFilterBar({ chipConfigs, onFiltersChange }) {
 | `chipConfigs` | `ChipConfig[]` | ✅ | 筛选项配置 |
 | `storageNamespace` | `string` | ✅ | localStorage 命名空间(每个页面必须唯一) |
 | `onFiltersChange` | `(result: FilterChipBarResult) => void` | ✅ | 搜索提交时回调 |
-| `statusOptions` | `FilterOption[]` | | 状态栏选项(空数组 = 不渲染状态栏) |
-| `statusCounts` | `Record<number, number>` | | 各状态对应数量 |
+| `tabs` | `TabOption[]` | | Tab 栏选项,含可选 count(空数组 = 不渲染) |
 | `commands` | `ActionCommand[]` | | 命令面板操作 |
-| `dynamicOptions` | `Record<string, FilterOption[]>` | | 动态加载的选项,key 为 chipConfig label |
-| `dynamicOptionsLoading` | `boolean` | | 动态选项加载中状态 |
 | `initialSearchText` | `string` | | 预填搜索文本(如从 URL 恢复) |
-| `initialStat` | `number` | | 预选状态(默认 `-1` = 全部) |
+| `initialTab` | `string \| number` | | 预选 tab(默认 `-1` = 全部) |
 | `placeholder` | `string` | | 输入框占位文本 |
 | `syntaxHelp` | `ReactNode` | | 自定义语法帮助内容 |
 | `onImageSearch` | `() => void` | | 传入则渲染以图搜图按钮 |
 | `rightExtra` | `ReactNode` | | 搜索框右侧自定义内容 |
-| `statusBarExtra` | `ReactNode` | | 状态栏右侧自定义内容(靠右对齐) |
+| `footerExtra` | `ReactNode` | | Tab 栏右侧自定义内容(靠右对齐) |
 | `searchResultCount` | `number` | | 搜索结果总数(用于记录搜索历史) |
 | `searchLoading` | `boolean` | | 加载状态(加载结束时自动保存搜索历史) |
 
@@ -242,7 +239,7 @@ interface FilterChipBarResult {
   searchText: string;                  // 原始搜索文本
   chips: Record<string, unknown>;      // 解析后的条件(label 为 key)
   freeText: string[];                  // 非 key:value 的文本片段
-  stat: number;                        // 状态栏选中值(-1 = 全部)
+  tab: string | number;                // Tab 选中值(-1 = 全部)
 }
 ```
 
@@ -252,10 +249,19 @@ interface FilterChipBarResult {
 interface ChipConfig {
   type: 'select' | 'multiSelect' | 'input' | 'dateRange' | 'numberRange';
   label: string;
-  options?: FilterOption[];
+  options?: FilterOption[] | (() => Promise<FilterOption[]>);  // 静态数组或异步加载
   precision?: number;      // numberRange 小数位数
   min?: number;            // numberRange 最小值
-  dynamic?: boolean;       // 选项通过 dynamicOptions 异步加载
+}
+```
+
+### `TabOption`
+
+```typescript
+interface TabOption {
+  value: string | number;
+  label: string;
+  count?: number;          // 可选计数徽标
 }
 ```
 

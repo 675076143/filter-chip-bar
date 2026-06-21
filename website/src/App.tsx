@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { FilterChipBar, type ChipConfig, type TabOption, type FilterChipBarResult } from 'filter-chip-bar';
-import { ExternalLink, BookOpen, Package, Globe } from 'lucide-react';
+import { BookOpen, Package, Globe } from 'lucide-react';
 
 const chipConfigs: ChipConfig[] = [
   {
@@ -44,6 +44,8 @@ const examples = [
 
 function App() {
   const [result, setResult] = useState<FilterChipBarResult | null>(null);
+  const [mountKey, setMountKey] = useState(0);
+  const [initialText, setInitialText] = useState('');
 
   return (
     <div className="min-h-screen flex flex-col bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
@@ -57,11 +59,12 @@ function App() {
 
         <div className="w-full max-w-2xl">
           <FilterChipBar
+            key={mountKey}
             chipConfigs={chipConfigs}
             storageNamespace="website-demo"
             tabs={tabs}
             onFiltersChange={setResult}
-            placeholder="Search or type filters...  (try: Status:Passing)"
+            initialSearchText={initialText}
             commands={[
               {
                 keywords: ['docs', 'storybook', 'documentation'],
@@ -86,24 +89,30 @@ function App() {
             ]}
           />
 
-          <div className="flex flex-wrap gap-2 mt-6 justify-center">
-            <span className="text-xs text-[hsl(var(--muted-foreground))] self-center mr-1">
-              Try:
-            </span>
-            {examples.map((ex) => (
-              <button
-                key={ex}
-                onClick={() => {
-                  const input = document.querySelector('input[role="combobox"]') as HTMLInputElement;
-                  if (input) {
-                    input.focus();
-                  }
-                }}
-                className="px-2.5 py-1 text-xs font-mono rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--secondary))] text-[hsl(var(--secondary-foreground))] hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--accent-foreground))] transition-colors"
-              >
-                {ex}
-              </button>
-            ))}
+          <div className="flex flex-col items-center gap-3 mt-6">
+            <div className="flex flex-wrap gap-2 justify-center items-center">
+              <span className="text-xs text-[hsl(var(--muted-foreground))] mr-1">
+                Try:
+              </span>
+              {examples.map((ex) => (
+                <button
+                  key={ex}
+                  onClick={() => {
+                    setInitialText(ex);
+                    setMountKey((k) => k + 1);
+                  }}
+                  className="px-2.5 py-1 text-xs font-mono rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--secondary))] text-[hsl(var(--secondary-foreground))] hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--accent-foreground))] transition-colors"
+                >
+                  {ex}
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-[hsl(var(--muted-foreground))]/70">
+              Or type <kbd className="px-1.5 py-0.5 rounded border border-[hsl(var(--border))] bg-[hsl(var(--muted))] font-mono text-[10px]">docs</kbd>{' '}
+              <kbd className="px-1.5 py-0.5 rounded border border-[hsl(var(--border))] bg-[hsl(var(--muted))] font-mono text-[10px]">install</kbd>{' '}
+              <kbd className="px-1.5 py-0.5 rounded border border-[hsl(var(--border))] bg-[hsl(var(--muted))] font-mono text-[10px]">github</kbd>{' '}
+              for quick actions
+            </p>
           </div>
 
           {result && (result.searchText || result.chips && Object.keys(result.chips).length > 0) && (

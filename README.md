@@ -86,9 +86,9 @@ function App() {
       chipConfigs={chipConfigs}
       storageNamespace="my-page"
       onFiltersChange={(result: FilterChipBarResult) => {
-        console.log(result.chips, result.freeText, result.stat);
+        console.log(result.chips, result.freeText, result.tab);
       }}
-      statusOptions={[
+      tabs={[
         { value: -1, label: 'All' },
         { value: 0, label: 'Pending' },
         { value: 1, label: 'Passing' },
@@ -220,18 +220,15 @@ When the user types a keyword that matches a command, it appears in the dropdown
 | `chipConfigs` | `ChipConfig[]` | ✅ | Filter field configurations |
 | `storageNamespace` | `string` | ✅ | localStorage namespace (must be unique per page) |
 | `onFiltersChange` | `(result: FilterChipBarResult) => void` | ✅ | Called when search is committed |
-| `statusOptions` | `FilterOption[]` | | Status bar options (empty = no status bar) |
-| `statusCounts` | `Record<number, number>` | | Counts shown next to each status |
+| `tabs` | `TabOption[]` | | Tab bar options with optional count (empty = no tab bar) |
 | `commands` | `ActionCommand[]` | | Command Palette actions |
-| `dynamicOptions` | `Record<string, FilterOption[]>` | | Async-loaded options, keyed by chip label |
-| `dynamicOptionsLoading` | `boolean` | | Show spinner for dynamic options |
 | `initialSearchText` | `string` | | Pre-fill search text (e.g. from URL) |
-| `initialStat` | `number` | | Pre-select status (default: `-1` = All) |
+| `initialTab` | `string \| number` | | Pre-select tab (default: `-1` = All) |
 | `placeholder` | `string` | | Input placeholder |
 | `syntaxHelp` | `ReactNode` | | Custom syntax help popover content |
 | `onImageSearch` | `() => void` | | Provide to render image search button |
 | `rightExtra` | `ReactNode` | | Custom content to the right of the search input |
-| `statusBarExtra` | `ReactNode` | | Custom content on the status bar row (right-aligned) |
+| `footerExtra` | `ReactNode` | | Custom content on the tab bar row (right-aligned) |
 | `searchResultCount` | `number` | | Total result count (for recent search tracking) |
 | `searchLoading` | `boolean` | | Loading state (triggers recent search save on completion) |
 
@@ -242,7 +239,7 @@ interface FilterChipBarResult {
   searchText: string;                  // Raw search text
   chips: Record<string, unknown>;      // Parsed conditions (label-keyed)
   freeText: string[];                  // Non-key:value text tokens
-  stat: number;                        // Status bar value (-1 = All)
+  tab: string | number;                // Tab value (-1 = All)
 }
 ```
 
@@ -252,10 +249,19 @@ interface FilterChipBarResult {
 interface ChipConfig {
   type: 'select' | 'multiSelect' | 'input' | 'dateRange' | 'numberRange';
   label: string;
-  options?: FilterOption[];
+  options?: FilterOption[] | (() => Promise<FilterOption[]>);  // Static array or async loader
   precision?: number;      // numberRange decimal places
   min?: number;            // numberRange minimum
-  dynamic?: boolean;       // options loaded async via dynamicOptions
+}
+```
+
+### `TabOption`
+
+```typescript
+interface TabOption {
+  value: string | number;
+  label: string;
+  count?: number;          // Optional count badge
 }
 ```
 
