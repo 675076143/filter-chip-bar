@@ -125,6 +125,7 @@ const examples = [
   'Orders:>=500',
   '-Status:Pending',
   '#urgent',
+  'Status:Pasing',
   'SKU:kxccaqvx12',
 ];
 
