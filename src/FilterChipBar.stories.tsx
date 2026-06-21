@@ -150,7 +150,7 @@ Use the **🌐 globe** toolbar button (top right) to switch documentation langua
 
 # FilterChipBar — 搜索即入口
 
-> 搜索是人机交互的第一个入口。简单,而伟大。
+> 搜索是人机交互的第一个入口。简单,而有效。
 
 ---
 
@@ -175,12 +175,12 @@ Use the **🌐 globe** toolbar button (top right) to switch documentation langua
 
 用户不需要关心"这个操作应该点哪个按钮"——输入任何内容,系统都能理解意图。
 
-### 为什么是"简单而伟大"
+### 为什么是"简单而有效"
 
 **简单**: 用户只需面对一个输入框。没有下拉框、没有折叠面板、没有"高级搜索"按钮。
 学习成本为零——会打字就会用。
 
-**伟大**: 一个搜索框承载了筛选、导航、命令执行三种能力。
+**有效**: 一个搜索框承载了筛选、导航、命令执行三种能力。
 power user 可以用键盘完成所有操作,不需要碰鼠标。
 
 ---
