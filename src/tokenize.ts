@@ -5,7 +5,7 @@ const TRUNCATE_LIMIT = 40;
 export function tokenizeSearchText(
   text: string,
   chipConfigs: ChipConfig[],
-  dynamicOptions?: Record<string, FilterOption[]>,
+  resolvedOptions?: Record<string, FilterOption[]>,
 ): TextToken[] {
   const parts = text.split(/(\s+)/);
   return parts.map((part) => {
@@ -31,7 +31,7 @@ export function tokenizeSearchText(
     let isValueValid = isLabelValid && !!valueStr;
     if (isLabelValid && valueStr && (config.type === 'select' || config.type === 'multiSelect')) {
       const vals = valueStr.split(',').map((s) => s.trim()).filter(Boolean);
-      const opts = dynamicOptions?.[label] ?? [];
+      const opts = resolvedOptions?.[label] ?? [];
       isValueValid = vals.length > 0 && vals.every((v) => opts.some((o) => o.label === v));
     }
 

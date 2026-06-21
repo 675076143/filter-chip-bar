@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-06-22
+
+### Breaking Changes
+- `statusOptions` → `tabs: TabOption[]` (new `TabOption` type with `value`, `label`, `count?`)
+- `statusCounts` removed — count folded into `TabOption.count`
+- `statusBarExtra` → `footerExtra`
+- `stat`/`setStat`/`initialStat` → `tab`/`setTab`/`initialTab` (now `string | number`)
+- `FilterChipBarResult.stat` → `.tab`
+- `SearchPreset.stat` → `.tab`
+- `dynamicOptions` + `dynamicOptionsLoading` props removed — `ChipConfig.options` now accepts `() => Promise<FilterOption[]>` and hook auto-resolves
+- `ChipConfig.dynamic` field removed
+- `operation: '区间'` → `operation: 'range'` in numberRange parser output
+
+### Added
+- shadcn renderer as default export (Radix + Tailwind + lucide-react)
+- `TabOption` type
+- `AsyncOptions` type
+- `/headless` subpath export (pure hook, zero UI deps)
+- `/antd6` subpath export (Ant Design 6 adapter)
+- Skeleton loading for async options
+- Command Palette (`commands` prop with `ActionCommand[]`)
+- `/` keyboard shortcut to focus search bar
+- Dark mode support (CSS variables)
+- a11y: ARIA combobox + listbox + option roles
+- Official website (Google-style landing page with interactive demo)
+- Storybook i18n (EN/CN) + dark mode toolbar + shadcn-styled docs
+- 35 unit tests (parser + tokenizer)
+
+### Fixed
+- Radix Popover `onOpenAutoFocus` stealing focus (dropdown flash)
+- `tokenizeSearchText` not handling comma-separated select values
+- Performance: `onFiltersChange` only fires on commit, not per keystroke
+- `localStorage` save operations in try-catch (Safari private mode safe)
+
 ## [0.1.0] - 2026-06-20
 
 ### Added

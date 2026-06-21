@@ -34,7 +34,7 @@ export function parseCurrentToken(text: string, chipConfigs: ChipConfig[]): Pars
 export function parseQuery(
   text: string,
   chipConfigs: ChipConfig[],
-  dynamicOptions?: Record<string, FilterOption[]>,
+  resolvedOptions?: Record<string, FilterOption[]>,
 ): { chips: Record<string, unknown>; freeText: string[] } {
   const chips: Record<string, unknown> = {};
   const freeText: string[] = [];
@@ -58,7 +58,7 @@ export function parseQuery(
 
     const chipKey = isNegated ? `not_${label}` : label;
 
-    const resolvedOpts = dynamicOptions?.[label] ?? [];
+    const resolvedOpts = resolvedOptions?.[label] ?? [];
 
     if (config.type === 'select') {
       if (rawValue.includes(',')) {
