@@ -253,14 +253,17 @@ kxccaqvx14
 | \`chipConfigs\` | \`ChipConfig[]\` | ✅ | 筛选项配置 |
 | \`storageNamespace\` | \`string\` | ✅ | localStorage 命名空间(不同页面必须不同) |
 | \`onFiltersChange\` | \`(result) => void\` | ✅ | 筛选结果回调 |
-| \`tabs\` | \`TabOption[]\` | | 状态栏选项(空数组则不渲染状态栏) |
-| \`statusCounts\` | \`Record<number, number>\` | | 各状态对应数量 |
+| \`tabs\` | \`TabOption[]\` | | Tab 栏选项,含可选 count(空数组则不渲染) |
 | \`commands\` | \`ActionCommand[]\` | | 快捷操作配置 |
-| \`dynamicOptions\` | \`Record<string, TabOption[]>\` | | 动态加载的选项(如部门、人员) |
+| \`initialSearchText\` | \`string\` | | 预填搜索文本(如从 URL 恢复) |
+| \`initialTab\` | \`string \\| number\` | | 预选 tab(默认 -1 = 全部) |
 | \`recentSearches\` | \`RecentSearch[]\` | | 搜索历史 |
 | \`placeholder\` | \`string\` | | 输入框占位文本 |
 | \`onImageSearch\` | \`() => void\` | | 以图搜图回调(不传则不渲染按钮) |
 | \`rightExtra\` | \`ReactNode\` | | 右侧自定义操作区 |
+| \`footerExtra\` | \`ReactNode\` | | Tab 栏右侧自定义内容(靠右对齐) |
+| \`searchResultCount\` | \`number\` | | 搜索结果总数(用于记录搜索历史) |
+| \`searchLoading\` | \`boolean\` | | 加载状态(加载结束自动保存搜索历史) |
         `,
       },
     },
@@ -351,8 +354,8 @@ export const WithStatusCounts: Story = {
     docs: {
       description: {
         story:
-          '底部状态栏各选项后面显示了对应的记录数量。这让用户在切换状态前就能预判结果集大小,' +
-          '减少无效操作。数量通过 `statusCounts` prop 传入。',
+          '底部 Tab 栏各选项后面显示了对应的记录数量。这让用户在切换前就能预判结果集大小,' +
+          '减少无效操作。数量通过 `TabOption.count` 传入。',
       },
     },
   },
@@ -420,8 +423,8 @@ export const DynamicOptionsLoading: Story = {
     docs: {
       description: {
         story:
-          '部门、运营人员等选项需要从后端动态加载。在数据未返回时,下拉框显示 loading 动画。' +
-          '通过 `dynamicOptionsLoading: true` 控制。配置了 `dynamic: true` 的 chipConfig 才会触发此状态。',
+          '部门、运营人员等选项需要从后端动态加载。在数据未返回时,下拉框显示 skeleton 占位动画。' +
+          '将 `ChipConfig.options` 设为 `async () => Promise<FilterOption[]>` 即可,hook 自动管理加载状态。',
       },
     },
   },
@@ -438,7 +441,7 @@ export const WithDynamicOptions: Story = {
       description: {
         story:
           '动态选项加载完成后,用户可以像静态选项一样选择。' +
-          '通过 `dynamicOptions` prop 传入,key 为 chipConfig 的 label。',
+          '将 `ChipConfig.options` 设为 `async () => fetchOptions()` 即可。',
       },
     },
   },
