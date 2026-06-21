@@ -615,12 +615,29 @@ function buildSuggestions(
     const usedLabels = neg ? usedNeg : usedPos;
     const lower = matchPrefix.toLowerCase();
     const filterSuggestions = chipConfigs
-      .filter((f) => (!lower || f.label.toLowerCase().includes(lower)) && !usedLabels.has(f.label))
-      .map((f) => ({
-        value: (neg ? '-' : '') + f.label + ':',
-        label: f.label,
-        hint: TYPE_HINTS[f.type] ?? f.type,
-      }));
+      .filter((f) => {
+        if (usedLabels.has(f.label)) return false;
+        if (!lower) return true;
+        if (f.label.toLowerCase().includes(lower)) return true;
+        if (f.aliases?.some((a) => a.toLowerCase().includes(lower) || lower.includes(a.toLowerCase()))) return true;
+        if (f.prefix && (f.prefix.includes(lower) || lower.includes(f.prefix))) return true;
+        return false;
+      })
+      .map((f) => {
+        const isPrefixMatch = f.prefix && lower && (f.prefix.includes(lower) || lower.includes(f.prefix));
+        if (isPrefixMatch) {
+          return {
+            value: (neg ? '-' : '') + f.prefix,
+            label: `${f.prefix} ${f.label}`,
+            hint: TYPE_HINTS[f.type] ?? f.type,
+          };
+        }
+        return {
+          value: (neg ? '-' : '') + f.label + ':',
+          label: f.label,
+          hint: TYPE_HINTS[f.type] ?? f.type,
+        };
+      });
     suggestions = suggestions.concat(filterSuggestions);
 
     if (!neg && lower) {

@@ -6,6 +6,7 @@ const defaultChipConfigs: ChipConfig[] = [
   {
     type: 'select',
     label: '审核状态',
+    aliases: ['st', 'status'],
     options: [
       { value: 0, label: '未审核' },
       { value: 1, label: '通过' },
@@ -16,17 +17,18 @@ const defaultChipConfigs: ChipConfig[] = [
   {
     type: 'select',
     label: '是否出单',
+    aliases: ['order'],
     options: [
       { value: -1, label: '未出单' },
       { value: 1, label: '出单' },
     ],
   },
-  { type: 'input', label: '虚拟SKU' },
-  { type: 'input', label: '产品名称' },
-  { type: 'select', label: '部门', options: [] },
-  { type: 'select', label: '运营人员', options: [] },
-  { type: 'numberRange', label: '订单量', precision: 0, min: 0 },
-  { type: 'numberRange', label: '审核次数', precision: 0 },
+  { type: 'input', label: '虚拟SKU', aliases: ['sku'] },
+  { type: 'input', label: '产品名称', aliases: ['name'] },
+  { type: 'select', label: '部门', aliases: ['dept'], options: async () => { await new Promise(r => setTimeout(r, 500)); return [{ value: 1, label: '运营一部' }, { value: 2, label: '运营二部' }]; } },
+  { type: 'select', label: '运营人员', aliases: ['op'], options: async () => { await new Promise(r => setTimeout(r, 500)); return [{ value: '张三', label: '张三' }, { value: '李四', label: '李四' }]; } },
+  { type: 'numberRange', label: '订单量', aliases: ['orders'], precision: 0, min: 0 },
+  { type: 'numberRange', label: '审核次数', aliases: ['count'], precision: 0 },
   {
     type: 'select',
     label: '供货模式',
@@ -39,6 +41,7 @@ const defaultChipConfigs: ChipConfig[] = [
   {
     type: 'multiSelect',
     label: '违规情况',
+    prefix: '!',
     options: [
       { value: 0, label: '未确认' },
       { value: 3, label: '未侵权' },
@@ -280,9 +283,9 @@ export default meta;
 type Story = StoryObj<typeof FilterChipBar>;
 
 const recentSearches: RecentSearch[] = [
-  { text: '审核状态:通过', total: 128, timestamp: Date.now() - 3600_000 },
-  { text: '是否出单:出单 -是否带电:否', total: 56, timestamp: Date.now() - 86_400_000 },
-  { text: '违规情况:未侵权', total: 1024, timestamp: Date.now() - 604_800_000 },
+  { text: '审核状态:通过', total: 128, timestamp: Date.now() - 3600_000, frequency: 1 },
+  { text: '是否出单:出单 -是否带电:否', total: 56, timestamp: Date.now() - 86_400_000, frequency: 1 },
+  { text: '违规情况:未侵权', total: 1024, timestamp: Date.now() - 604_800_000, frequency: 1 },
 ];
 
 export const Default: Story = {
