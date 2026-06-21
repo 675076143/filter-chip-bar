@@ -24,6 +24,7 @@ const i18n = {
       { syntax: 'key:val1,val2', desc: 'Multi-value', example: 'Status:Passing,Failing' },
       { syntax: 'alias:value', desc: 'Shortcut (alias)', example: 'st:pass' },
       { syntax: '#tag', desc: 'Prefix syntax', example: '#urgent' },
+      { syntax: '@user', desc: 'Mention syntax', example: '@Robin' },
       { syntax: '/command', desc: 'Slash command', example: '/docs' },
       { syntax: 'key:>=100', desc: 'Numeric compare', example: 'Orders:>=500' },
       { syntax: 'key:100~200', desc: 'Numeric range', example: 'Orders:100~500' },
@@ -36,7 +37,7 @@ const i18n = {
       { title: 'Multi-Protocol Prefix', desc: '#tag, @user, >date — FDMA multiplexing on one channel.', icon: '#️⃣' },
       { title: 'Label Aliases', desc: 'st:pass = Status:Passing. Lossless compression for power users.', icon: '⚡' },
       { title: 'Forward Error Correction', desc: 'Typo? "Did you mean Passing?" — Levenshtein auto-correction.', icon: '🛡️' },
-      { title: 'Command Palette', desc: 'Type "docs" or "install" for quick navigation and actions.', icon: '⌘' },
+      { title: 'Command Palette', desc: 'Type /docs or /install for quick navigation and actions.', icon: '⌘' },
       { title: 'Cascading Filters', desc: 'options(chips) — dependent fields auto-resolve via graph traversal.', icon: '🔗' },
       { title: 'Progressive Discovery', desc: 'Hints appear as you learn — ZPD scaffolding, not tutorials.', icon: '💡' },
       { title: 'Headless Architecture', desc: 'useFilterChipBar() hook + any renderer (shadcn / antd6 / custom).', icon: '🧠' },
@@ -71,6 +72,7 @@ const i18n = {
       { syntax: 'key:val1,val2', desc: '多值选择', example: 'Status:Passing,Failing' },
       { syntax: 'alias:value', desc: '别名简写', example: 'st:pass' },
       { syntax: '#tag', desc: '前缀语法', example: '#urgent' },
+      { syntax: '@user', desc: '提及语法', example: '@Robin' },
       { syntax: '/command', desc: '斜杠命令', example: '/docs' },
       { syntax: 'key:>=100', desc: '数值比较', example: 'Orders:>=500' },
       { syntax: 'key:100~200', desc: '数值区间', example: 'Orders:100~500' },
@@ -83,7 +85,7 @@ const i18n = {
       { title: '多协议前缀', desc: '#tag、@user、>date — FDMA 频分复用,一个信道多种语法。', icon: '#️⃣' },
       { title: '标签别名', desc: 'st:pass = Status:Passing。面向 power user 的无损压缩。', icon: '⚡' },
       { title: '前向纠错 (FEC)', desc: '打错了?"Did you mean Passing?" — Levenshtein 自动纠正。', icon: '🛡️' },
-      { title: '命令面板', desc: '输入 "docs" 或 "install" 快速导航和执行操作。', icon: '⌘' },
+      { title: '命令面板', desc: '输入 /docs 或 /install 快速导航和执行操作。', icon: '⌘' },
       { title: '级联筛选', desc: 'options(chips) — 依赖字段通过图遍历自动 resolve。', icon: '🔗' },
       { title: '渐进式发现', desc: '使用中学习 — ZPD 脚手架,不是教程。', icon: '💡' },
       { title: 'Headless 架构', desc: 'useFilterChipBar() hook + 任意 renderer (shadcn / antd6 / 自定义)。', icon: '🧠' },
@@ -172,6 +174,7 @@ function App() {
   const [mountKey, setMountKey] = useState(0);
   const [initialText, setInitialText] = useState('');
   const [lang, setLang] = useState<'en' | 'zh'>('en');
+  const [copied, setCopied] = useState(false);
   const t = i18n[lang];
 
   return (
@@ -190,9 +193,17 @@ function App() {
           {t.badge}
         </div>
 
-        <h1 className="text-5xl sm:text-7xl font-extrabold tracking-tight text-center mb-4">
+        <h1 className="text-5xl sm:text-7xl font-extrabold tracking-tight text-center mb-3">
           filter-chip-bar
         </h1>
+        <div className="flex items-center justify-center gap-2 mb-4">
+          <a href="https://www.npmjs.com/package/filter-chip-bar" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] hover:opacity-80 transition-opacity">
+            npm v0.2.0
+          </a>
+          <a href="https://github.com/675076143/filter-chip-bar" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-[hsl(var(--secondary))] text-[hsl(var(--secondary-foreground))] border border-[hsl(var(--border))] hover:bg-[hsl(var(--accent))] transition-colors">
+            MIT
+          </a>
+        </div>
         <p className="text-lg sm:text-xl text-[hsl(var(--muted-foreground))] mb-12 text-center max-w-lg">
           {t.tagline}<br />{t.tagline2}
         </p>
@@ -278,10 +289,14 @@ function App() {
               <span className="text-[hsl(var(--muted-foreground))]">$</span>
               <span>npm install filter-chip-bar</span>
               <button
-                onClick={() => navigator.clipboard.writeText('npm install filter-chip-bar')}
+                onClick={() => {
+                  navigator.clipboard.writeText('npm install filter-chip-bar');
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                }}
                 className="ml-auto text-xs text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors"
               >
-                {t.copy}
+                {copied ? '✓' : t.copy}
               </button>
             </div>
             <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
