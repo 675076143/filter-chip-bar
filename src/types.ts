@@ -11,11 +11,12 @@ export interface TabOption {
 
 export type FilterType = 'select' | 'multiSelect' | 'input' | 'dateRange' | 'numberRange';
 
-export type AsyncOptions = () => Promise<FilterOption[]>;
+export type AsyncOptions = (chips?: Record<string, unknown>) => Promise<FilterOption[]>;
 
 export interface ChipConfig {
   type: FilterType;
   label: string;
+  aliases?: string[];
   options?: FilterOption[] | AsyncOptions;
   initialOperator?: string;
   precision?: number;
@@ -34,6 +35,7 @@ export interface RecentSearch {
   text: string;
   total: number;
   timestamp: number;
+  frequency: number;
 }
 
 export interface FilterChipBarResult {

@@ -26,12 +26,12 @@ export function tokenizeSearchText(
 
     const label = cleanPart.slice(0, colonIdx);
     const valueStr = cleanPart.slice(colonIdx + 1);
-    const config = chipConfigs.find((f) => f.label === label);
+    const config = chipConfigs.find((f) => f.label === label || f.aliases?.includes(label));
     const isLabelValid = !!config;
     let isValueValid = isLabelValid && !!valueStr;
     if (isLabelValid && valueStr && (config.type === 'select' || config.type === 'multiSelect')) {
       const vals = valueStr.split(',').map((s) => s.trim()).filter(Boolean);
-      const opts = resolvedOptions?.[label] ?? [];
+      const opts = resolvedOptions?.[config.label] ?? [];
       isValueValid = vals.length > 0 && vals.every((v) => opts.some((o) => o.label === v));
     }
 

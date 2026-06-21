@@ -16,6 +16,7 @@ const configs: ChipConfig[] = [
   {
     type: 'multiSelect',
     label: 'Tags',
+    aliases: ['tag', 't'],
     options: [
       { value: 'a', label: 'Alpha' },
       { value: 'b', label: 'Beta' },
@@ -138,6 +139,25 @@ describe('parseQuery', () => {
       Status: [{ value: 99, label: 'Custom' }],
     });
     expect(chips.Status).toBe(99);
+  });
+});
+
+describe('aliases', () => {
+  it('parses alias as label', () => {
+    const { chips } = parseQuery('t:Alpha', configs, opts);
+    expect(chips.Tags).toEqual(['a']);
+  });
+
+  it('parses full alias name', () => {
+    const { chips } = parseQuery('tag:Alpha', configs, opts);
+    expect(chips.Tags).toEqual(['a']);
+  });
+
+  it('alias label is valid in tokenize', () => {
+    const tokens = tokenizeSearchText('t:Alpha', configs, opts);
+    if (tokens[0].type === 'chip') {
+      expect(tokens[0].isLabelValid).toBe(true);
+    }
   });
 });
 

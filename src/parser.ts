@@ -21,7 +21,7 @@ export function parseCurrentToken(text: string, chipConfigs: ChipConfig[]): Pars
 
   const label = token.slice(0, colonIdx);
   const valuePart = token.slice(colonIdx + 1);
-  const config = chipConfigs.find((f) => f.label === label);
+  const config = chipConfigs.find((f) => f.label === label || f.aliases?.includes(label));
 
   if (config?.type === 'multiSelect' || config?.type === 'select') {
     const lastComma = valuePart.lastIndexOf(',');
@@ -50,15 +50,16 @@ export function parseQuery(
     }
     const label = cleanToken.slice(0, colonIdx);
     const rawValue = cleanToken.slice(colonIdx + 1).replace(/^["']|["']$/g, '');
-    const config = chipConfigs.find((f) => f.label === label);
+    const config = chipConfigs.find((f) => f.label === label || f.aliases?.includes(label));
     if (!config) {
       freeText.push(token);
       continue;
     }
 
-    const chipKey = isNegated ? `not_${label}` : label;
+    const canonicalLabel = config.label;
+    const chipKey = isNegated ? `not_${canonicalLabel}` : canonicalLabel;
 
-    const resolvedOpts = resolvedOptions?.[label] ?? [];
+    const resolvedOpts = resolvedOptions?.[canonicalLabel] ?? [];
 
     if (config.type === 'select') {
       if (rawValue.includes(',')) {

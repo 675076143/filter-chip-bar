@@ -113,6 +113,11 @@ export function useFilterChipBar({
   const [recentSearches, setRecentSearches] = useState<RecentSearch[]>(() => loadRecent(storageNamespace));
   const pendingSearchRef = useRef<string | null>(null);
 
+  const currentChips = useMemo(() => {
+    const { chips } = parseQuery(searchText, chipConfigs, {});
+    return chips;
+  }, [searchText, chipConfigs]);
+
   useEffect(() => {
     let cancelled = false;
     const asyncConfigs = chipConfigs.filter(
@@ -121,7 +126,7 @@ export function useFilterChipBar({
     asyncConfigs.forEach(async (config) => {
       setLoadingLabels((prev) => new Set(prev).add(config.label));
       try {
-        const result = await config.options();
+        const result = await config.options(currentChips);
         if (!cancelled) {
           setResolvedOptions((prev) => ({ ...prev, [config.label]: result }));
         }
@@ -138,7 +143,7 @@ export function useFilterChipBar({
       }
     });
     return () => { cancelled = true; };
-  }, [chipConfigs]);
+  }, [chipConfigs, currentChips]);
 
   const allOptions = useMemo(() => {
     const merged: Record<string, FilterOption[]> = {};
@@ -185,7 +190,13 @@ export function useFilterChipBar({
       const text = pendingSearchRef.current;
       pendingSearchRef.current = null;
       setRecentSearches((prev) => {
-        const entry: RecentSearch = { text, total: searchResultCount ?? 0, timestamp: Date.now() };
+        const existing = prev.find((e) => e.text === text);
+        const entry: RecentSearch = {
+          text,
+          total: searchResultCount ?? 0,
+          timestamp: Date.now(),
+          frequency: (existing?.frequency ?? 0) + 1,
+        };
         const next = [entry, ...prev.filter((e) => e.text !== text)].slice(0, 10);
         saveRecent(storageNamespace, next);
         return next;
@@ -497,10 +508,12 @@ export function useFilterChipBar({
     return loadingLabels.has(parsedToken.filterConfig.label);
   }, [parsedToken, loadingLabels]);
 
-  const filteredHistory = useMemo(() => recentSearches.filter((h) => {
-    if (!searchText) return true;
-    return h.text.toLowerCase().includes(searchText.toLowerCase());
-  }), [recentSearches, searchText]);
+  const filteredHistory = useMemo(() => recentSearches
+    .filter((h) => {
+      if (!searchText) return true;
+      return h.text.toLowerCase().includes(searchText.toLowerCase());
+    })
+    .sort((a, b) => (b.frequency - a.frequency) || (b.timestamp - a.timestamp)), [recentSearches, searchText]);
 
   return {
     inputRef,
