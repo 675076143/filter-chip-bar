@@ -238,9 +238,9 @@ function App() {
               ))}
             </div>
             <p className="text-xs text-[hsl(var(--muted-foreground))]/70">
-              {t.orType} <kbd className="px-1.5 py-0.5 rounded border border-[hsl(var(--border))] bg-[hsl(var(--muted))] font-mono text-[10px]">docs</kbd>{' '}
-              <kbd className="px-1.5 py-0.5 rounded border border-[hsl(var(--border))] bg-[hsl(var(--muted))] font-mono text-[10px]">install</kbd>{' '}
-              <kbd className="px-1.5 py-0.5 rounded border border-[hsl(var(--border))] bg-[hsl(var(--muted))] font-mono text-[10px]">github</kbd>{' '}
+              {t.orType} <kbd className="px-1.5 py-0.5 rounded border border-[hsl(var(--border))] bg-[hsl(var(--muted))] font-mono text-[10px]">/docs</kbd>{' '}
+              <kbd className="px-1.5 py-0.5 rounded border border-[hsl(var(--border))] bg-[hsl(var(--muted))] font-mono text-[10px]">/install</kbd>{' '}
+              <kbd className="px-1.5 py-0.5 rounded border border-[hsl(var(--border))] bg-[hsl(var(--muted))] font-mono text-[10px]">/github</kbd>{' '}
               {t.forActions}
             </p>
           </div>
