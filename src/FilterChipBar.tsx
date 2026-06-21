@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import {
   type ChipConfig,
-  type FilterOption,
+  type TabOption,
   type FilterChipBarResult,
   type TextToken,
   type ActionCommand,
@@ -40,16 +40,15 @@ export interface FilterChipBarProps {
   chipConfigs: ChipConfig[];
   onFiltersChange: (result: FilterChipBarResult) => void;
   storageNamespace: string;
-  statusOptions?: FilterOption[];
-  statusCounts?: Record<number, number>;
+  tabs?: TabOption[];
   rightExtra?: ReactNode;
   initialSearchText?: string;
-  initialStat?: number;
+  initialTab?: number;
   commands?: ActionCommand[];
   placeholder?: string;
   syntaxHelp?: ReactNode;
   onImageSearch?: () => void;
-  statusBarExtra?: ReactNode;
+  footerExtra?: ReactNode;
   searchResultCount?: number;
   searchLoading?: boolean;
 }
@@ -58,16 +57,15 @@ export default function FilterChipBar({
   chipConfigs,
   onFiltersChange,
   storageNamespace,
-  statusOptions,
-  statusCounts,
+  tabs,
   rightExtra,
   initialSearchText = '',
-  initialStat = -1,
+  initialTab = -1,
   commands,
   placeholder = DEFAULT_PLACEHOLDER,
   syntaxHelp = DEFAULT_SYNTAX_HELP,
   onImageSearch,
-  statusBarExtra,
+  footerExtra,
   searchResultCount,
   searchLoading,
 }: FilterChipBarProps) {
@@ -76,7 +74,7 @@ export default function FilterChipBar({
     storageNamespace,
     commands,
     initialSearchText,
-    initialStat,
+    initialTab,
     onFiltersChange,
     searchResultCount,
     searchLoading,
@@ -365,7 +363,7 @@ export default function FilterChipBar({
     </div>
   );
 
-  const showStatusBar = !!statusOptions && statusOptions.length > 0;
+  const showStatusBar = !!tabs && tabs.length > 0;
 
   return (
     <div className="bg-background rounded-lg border border-border px-6 py-3 mb-4">
@@ -479,32 +477,32 @@ export default function FilterChipBar({
         {rightExtra}
       </div>
 
-      {(showStatusBar || statusBarExtra) && (
+      {(showStatusBar || footerExtra) && (
         <div className="flex gap-0.5 items-center flex-wrap mt-2">
           {showStatusBar &&
-            statusOptions!.map((opt) => (
+            tabs!.map((opt) => (
               <button
                 key={String(opt.value)}
                 type="button"
                 className={cn(
                   'border-none bg-transparent px-1 py-1 text-xs rounded-sm whitespace-nowrap shrink-0 inline-flex items-center gap-1 cursor-pointer transition-colors',
-                  fcb.stat === opt.value
+                  fcb.tab === opt.value
                     ? 'font-semibold text-foreground'
                     : 'text-muted-foreground/80',
                 )}
-                onClick={() => fcb.setStat(opt.value as number)}
+                onClick={() => fcb.setTab(opt.value as number)}
               >
                 {opt.label}
-                {statusCounts && statusCounts[opt.value as number] != null && (
+                {opt.count != null && (
                   <span className="text-xs text-muted-foreground/60 tabular-nums">
-                    {statusCounts[opt.value as number]}
+                    {opt.count}
                   </span>
                 )}
               </button>
             ))}
-          {statusBarExtra && (
+          {footerExtra && (
             <div className="ml-auto flex gap-0.5 items-center">
-              {statusBarExtra}
+              {footerExtra}
             </div>
           )}
         </div>

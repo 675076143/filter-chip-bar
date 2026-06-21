@@ -32,7 +32,7 @@ export interface UseFilterChipBarOptions {
   storageNamespace: string;
   commands?: ActionCommand[];
   initialSearchText?: string;
-  initialStat?: number;
+  initialTab?: string | number;
   onFiltersChange?: (result: FilterChipBarResult) => void;
   fontInfo?: { fontSize: number; fontFamily: string };
   searchResultCount?: number;
@@ -48,8 +48,8 @@ export interface UseFilterChipBarReturn {
   textTokens: TextToken[];
   activeFilterCount: number;
 
-  stat: number;
-  setStat: (stat: number) => void;
+  tab: string | number;
+  setTab: (tab: string | number) => void;
 
   isDropdownOpen: boolean;
   setDropdownOpen: (open: boolean) => void;
@@ -89,7 +89,7 @@ export function useFilterChipBar({
   storageNamespace,
   commands = [],
   initialSearchText = '',
-  initialStat = -1,
+  initialTab = -1,
   onFiltersChange,
   fontInfo,
   searchResultCount,
@@ -101,7 +101,7 @@ export function useFilterChipBar({
   const scrollPosRef = useRef(0);
 
   const [searchText, setSearchText] = useState(initialSearchText);
-  const [stat, setStat] = useState(initialStat);
+  const [tab, setTab] = useState(initialTab);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [activeIdx, setActiveIdx] = useState(-1);
   const [inputScrollLeft, setInputScrollLeft] = useState(0);
@@ -156,21 +156,21 @@ export function useFilterChipBar({
   cbRef.current = onFiltersChange;
 
   const applyFilters = useCallback(
-    (text: string, s: number) => {
+    (text: string, s: string | number) => {
       const { chips, freeText } = parseQuery(text, chipConfigs, allOptions);
       const cleaned = Object.fromEntries(
         Object.entries(chips).filter(([, v]) => v !== undefined && v !== null && v !== ''),
       );
-      cbRef.current?.({ searchText: text, chips: cleaned, freeText, stat: s });
+      cbRef.current?.({ searchText: text, chips: cleaned, freeText, tab: s });
       pendingSearchRef.current = text.trim() || null;
     },
     [chipConfigs, allOptions],
   );
 
   useEffect(() => {
-    applyFilters(searchText, stat);
+    applyFilters(searchText, tab);
     /* eslint-disable-next-line */
-  }, [stat]);
+  }, [tab]);
 
   useEffect(() => {
     setPresets(loadPresets(storageNamespace));
@@ -257,18 +257,18 @@ export function useFilterChipBar({
       id: `${Date.now()}`,
       name,
       searchText,
-      stat,
+      tab,
       createdAt: Date.now(),
     };
     const next = [preset, ...presets];
     setPresets(next);
     savePresets(storageNamespace, next);
     setPresetName('');
-  }, [presetName, searchText, stat, presets, storageNamespace]);
+  }, [presetName, searchText, tab, presets, storageNamespace]);
 
   const handleLoadPreset = useCallback((preset: SearchPreset) => {
     setSearchText(preset.searchText);
-    setStat(preset.stat);
+    setTab(preset.tab);
     setPresetOpen(false);
   }, []);
 
@@ -284,7 +284,7 @@ export function useFilterChipBar({
   const buildShareUrl = useCallback((preset: SearchPreset) => {
     const params = new URLSearchParams();
     if (preset.searchText) params.set('q', preset.searchText);
-    if (preset.stat >= 0) params.set('stat', String(preset.stat));
+    if (preset.tab !== -1) params.set('tab', String(preset.tab));
     return `${window.location.origin}${window.location.pathname}?${params.toString()}`;
   }, []);
 
@@ -295,12 +295,12 @@ export function useFilterChipBar({
     const newToken = token.startsWith('-') ? token.slice(1) : '-' + token;
     const newText = before + newToken;
     setSearchText(newText);
-    applyFilters(newText, stat);
+    applyFilters(newText, tab);
     setTimeout(() => {
       setDropdownOpen(true);
       inputRef.current?.focus();
     }, 0);
-  }, [searchText, stat, applyFilters]);
+  }, [searchText, tab, applyFilters]);
 
   const handleSuggestionClick = useCallback(
     (value: string) => {
@@ -318,13 +318,13 @@ export function useFilterChipBar({
       const suffix = isPartial ? '' : supportsMultiValue ? '' : ' ';
       const newText = before + value + suffix;
       setSearchText(newText);
-      if (!isPartial) applyFilters(newText, stat);
+      if (!isPartial) applyFilters(newText, tab);
       setTimeout(() => {
         setDropdownOpen(true);
         inputRef.current?.focus();
       }, 0);
     },
-    [searchText, stat, applyFilters, chipConfigs],
+    [searchText, tab, applyFilters, chipConfigs],
   );
 
   const executeCommand = useCallback((cmd: ActionCommand) => {
@@ -348,13 +348,13 @@ export function useFilterChipBar({
         const newValue = searchText.slice(0, start) + converted + searchText.slice(end);
         setSearchText(newValue);
         setDropdownOpen(true);
-        applyFilters(newValue, stat);
+        applyFilters(newValue, tab);
         setTimeout(() => {
           input.selectionStart = input.selectionEnd = start + converted.length;
         }, 0);
       }
     },
-    [searchText, stat, applyFilters],
+    [searchText, tab, applyFilters],
   );
 
   const handleInputChange = useCallback(
@@ -386,19 +386,19 @@ export function useFilterChipBar({
             const newText = `${prefix}${fLabel}:"${fValue}" `;
             setSearchText(newText);
             setDropdownOpen(true);
-            applyFilters(newText, stat);
+            applyFilters(newText, tab);
             return;
           }
         }
         setSearchText(newValue);
         setDropdownOpen(true);
-        applyFilters(newValue, stat);
+        applyFilters(newValue, tab);
         return;
       }
       setSearchText(newValue);
       setDropdownOpen(true);
     },
-    [searchText, chipConfigs, stat, applyFilters],
+    [searchText, chipConfigs, tab, applyFilters],
   );
 
   const handleKeyDown = useCallback(
@@ -430,13 +430,13 @@ export function useFilterChipBar({
           } else if (s.action === 'recent') {
             setSearchText(s.value);
             setDropdownOpen(false);
-            applyFilters(s.value, stat);
+            applyFilters(s.value, tab);
           } else {
             handleSuggestionClick(s.value);
           }
         } else {
           setDropdownOpen(false);
-          applyFilters(searchText, stat);
+          applyFilters(searchText, tab);
         }
         setActiveIdx(-1);
       } else if (e.key === 'Escape') {
@@ -453,7 +453,7 @@ export function useFilterChipBar({
         } else if (s.action === 'recent') {
           setSearchText(s.value);
           setDropdownOpen(false);
-          applyFilters(s.value, stat);
+          applyFilters(s.value, tab);
         } else {
           handleSuggestionClick(s.value);
         }
@@ -465,7 +465,7 @@ export function useFilterChipBar({
           const prevSpace = trimmed.lastIndexOf(' ');
           const newText = prevSpace === -1 ? '' : trimmed.slice(0, prevSpace) + ' ';
           setSearchText(newText);
-          applyFilters(newText, stat);
+          applyFilters(newText, tab);
         }
       }
       if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) {
@@ -478,14 +478,14 @@ export function useFilterChipBar({
         });
       }
     },
-    [suggestions, activeIdx, searchText, stat, applyFilters, handleToggleNegate, handleSuggestionClick, executeCommand],
+    [suggestions, activeIdx, searchText, tab, applyFilters, handleToggleNegate, handleSuggestionClick, executeCommand],
   );
 
   const handleClear = useCallback(() => {
     setSearchText('');
-    applyFilters('', stat);
+    applyFilters('', tab);
     inputRef.current?.focus();
-  }, [stat, applyFilters]);
+  }, [tab, applyFilters]);
 
   const onInputScroll = useCallback((scrollLeft: number) => {
     scrollPosRef.current = scrollLeft;
@@ -509,8 +509,8 @@ export function useFilterChipBar({
     setSearchText,
     textTokens,
     activeFilterCount,
-    stat,
-    setStat,
+    tab,
+    setTab,
     isDropdownOpen: dropdownOpen,
     setDropdownOpen,
     activeSuggestionIdx: activeIdx,

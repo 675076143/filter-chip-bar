@@ -1,5 +1,6 @@
 export {
   type FilterOption,
+  type TabOption,
   type FilterType,
   type AsyncOptions,
   type ChipConfig,

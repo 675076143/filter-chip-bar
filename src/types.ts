@@ -3,6 +3,12 @@ export interface FilterOption {
   label: string;
 }
 
+export interface TabOption {
+  value: string | number;
+  label: string;
+  count?: number;
+}
+
 export type FilterType = 'select' | 'multiSelect' | 'input' | 'dateRange' | 'numberRange';
 
 export type AsyncOptions = () => Promise<FilterOption[]>;
@@ -20,7 +26,7 @@ export interface SearchPreset {
   id: string;
   name: string;
   searchText: string;
-  stat: number;
+  tab: string | number;
   createdAt: number;
 }
 
@@ -33,10 +39,10 @@ export interface RecentSearch {
 export interface FilterChipBarResult {
   searchText: string;
   chips: Record<string, unknown>;
-  /** Text fragments that are neither chip conditions nor stat — used for full-text search */
+  /** Text fragments that are neither chip conditions nor tab — used for full-text search */
   freeText: string[];
-  /** Current status value, -1 means "All" */
-  stat: number;
+  /** Current tab value, -1 means "All" */
+  tab: string | number;
 }
 
 export interface SuggestionItem {

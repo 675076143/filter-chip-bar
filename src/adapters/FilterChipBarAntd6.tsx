@@ -12,7 +12,7 @@ import {
 } from '@ant-design/icons';
 import {
   type ChipConfig,
-  type FilterOption,
+  type TabOption,
   type FilterChipBarResult,
   type TextToken,
   type ActionCommand,
@@ -52,16 +52,15 @@ export interface FilterChipBarAntd6Props {
   chipConfigs: ChipConfig[];
   onFiltersChange: (result: FilterChipBarResult) => void;
   storageNamespace: string;
-  statusOptions?: FilterOption[];
-  statusCounts?: Record<number, number>;
+  tabs?: TabOption[];
   rightExtra?: ReactNode;
   initialSearchText?: string;
-  initialStat?: number;
+  initialTab?: number;
   commands?: ActionCommand[];
   placeholder?: string;
   syntaxHelp?: ReactNode;
   onImageSearch?: () => void;
-  statusBarExtra?: ReactNode;
+  footerExtra?: ReactNode;
   searchResultCount?: number;
   searchLoading?: boolean;
 }
@@ -70,16 +69,15 @@ export default function FilterChipBarAntd6({
   chipConfigs,
   onFiltersChange,
   storageNamespace,
-  statusOptions,
-  statusCounts,
+  tabs,
   rightExtra,
   initialSearchText = '',
-  initialStat = -1,
+  initialTab = -1,
   commands,
   placeholder = DEFAULT_PLACEHOLDER,
   syntaxHelp = DEFAULT_SYNTAX_HELP,
   onImageSearch,
-  statusBarExtra,
+  footerExtra,
   searchResultCount,
   searchLoading,
 }: FilterChipBarAntd6Props) {
@@ -90,7 +88,7 @@ export default function FilterChipBarAntd6({
     storageNamespace,
     commands,
     initialSearchText,
-    initialStat,
+    initialTab,
     onFiltersChange,
     fontInfo: { fontSize: token.fontSize, fontFamily: token.fontFamily },
     searchResultCount,
@@ -498,7 +496,7 @@ export default function FilterChipBarAntd6({
     fontVariantNumeric: 'tabular-nums',
   };
 
-  const showStatusBar = !!statusOptions && statusOptions.length > 0;
+  const showStatusBar = !!tabs && tabs.length > 0;
 
   return (
     <div
@@ -667,7 +665,7 @@ export default function FilterChipBarAntd6({
         {rightExtra}
       </div>
 
-      {(showStatusBar || statusBarExtra) && (
+      {(showStatusBar || footerExtra) && (
         <div
           style={{
             display: 'flex',
@@ -678,20 +676,20 @@ export default function FilterChipBarAntd6({
           }}
         >
           {showStatusBar &&
-            statusOptions!.map((opt) => (
+            tabs!.map((opt) => (
               <button
                 key={String(opt.value)}
                 type="button"
-                style={statusLinkStyle(fcb.stat === opt.value)}
-                onClick={() => fcb.setStat(opt.value as number)}
+                style={statusLinkStyle(fcb.tab === opt.value)}
+                onClick={() => fcb.setTab(opt.value as number)}
               >
                 {opt.label}
-                {statusCounts && statusCounts[opt.value as number] != null && (
-                  <span style={countStyle}>{statusCounts[opt.value as number]}</span>
+                {opt.count != null && (
+                  <span style={countStyle}>{opt.count}</span>
                 )}
               </button>
             ))}
-          {statusBarExtra && (
+          {footerExtra && (
             <div
               style={{
                 marginLeft: 'auto',
@@ -700,7 +698,7 @@ export default function FilterChipBarAntd6({
                 alignItems: 'center',
               }}
             >
-              {statusBarExtra}
+              {footerExtra}
             </div>
           )}
         </div>

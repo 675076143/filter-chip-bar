@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { fn } from '@storybook/test';
-import { FilterChipBar, type ChipConfig, type FilterOption, type RecentSearch, type ActionCommand, saveRecent } from './index';
+import { FilterChipBar, type ChipConfig, type TabOption, type RecentSearch, type ActionCommand, saveRecent } from './index';
 
 const defaultChipConfigs: ChipConfig[] = [
   {
@@ -23,8 +23,8 @@ const defaultChipConfigs: ChipConfig[] = [
   },
   { type: 'input', label: '虚拟SKU' },
   { type: 'input', label: '产品名称' },
-  { type: 'select', label: '部门', options: [], dynamic: true },
-  { type: 'select', label: '运营人员', options: [], dynamic: true },
+  { type: 'select', label: '部门', options: [] },
+  { type: 'select', label: '运营人员', options: [] },
   { type: 'numberRange', label: '订单量', precision: 0, min: 0 },
   { type: 'numberRange', label: '审核次数', precision: 0 },
   {
@@ -47,13 +47,16 @@ const defaultChipConfigs: ChipConfig[] = [
   },
 ];
 
-const defaultStatusOptions: FilterOption[] = [
+const defaultTabs: TabOption[] = [
   { value: -1, label: '全部' },
   { value: 0, label: '未审核' },
   { value: 1, label: '通过' },
   { value: 2, label: '失败' },
   { value: 3, label: '异常' },
 ];
+
+const demoCounts: Record<number, number> = { [-1]: 67, [0]: 10, [1]: 38, [2]: 14, [3]: 5 };
+const tabsWithCounts = defaultTabs.map((t) => ({ ...t, count: demoCounts[t.value as number] }));
 
 const meta: Meta<typeof FilterChipBar> = {
   title: 'FilterChipBar',
@@ -103,7 +106,7 @@ FilterChipBar uses a **headless + renderer** separation:
 
 \`\`\`
 useFilterChipBar()          ← Headless Hook (pure logic, zero UI deps)
-  ├── State: searchText / stat / dropdown / presets
+  ├── State: searchText / tab / dropdown / presets
   ├── Parser: parseCurrentToken / parseQuery
   ├── Keyboard: ↑↓ Enter Tab Esc Backspace
   ├── Suggestions: autocomplete + fuzzy match + selected exclusion
@@ -185,7 +188,7 @@ FilterChipBar 采用 **headless + renderer** 分离架构:
 
 \`\`\`
 useFilterChipBar()          ← Headless Hook(纯逻辑,零 UI 依赖)
-  ├── 状态管理: searchText / stat / dropdown / presets
+  ├── 状态管理: searchText / tab / dropdown / presets
   ├── 解析引擎: parseCurrentToken / parseQuery
   ├── 键盘导航: ↑↓ Enter Tab Esc Backspace
   ├── 智能建议: 自动补全 + 模糊匹配 + 已选排除
@@ -250,10 +253,10 @@ kxccaqvx14
 | \`chipConfigs\` | \`ChipConfig[]\` | ✅ | 筛选项配置 |
 | \`storageNamespace\` | \`string\` | ✅ | localStorage 命名空间(不同页面必须不同) |
 | \`onFiltersChange\` | \`(result) => void\` | ✅ | 筛选结果回调 |
-| \`statusOptions\` | \`FilterOption[]\` | | 状态栏选项(空数组则不渲染状态栏) |
+| \`tabs\` | \`TabOption[]\` | | 状态栏选项(空数组则不渲染状态栏) |
 | \`statusCounts\` | \`Record<number, number>\` | | 各状态对应数量 |
 | \`commands\` | \`ActionCommand[]\` | | 快捷操作配置 |
-| \`dynamicOptions\` | \`Record<string, FilterOption[]>\` | | 动态加载的选项(如部门、人员) |
+| \`dynamicOptions\` | \`Record<string, TabOption[]>\` | | 动态加载的选项(如部门、人员) |
 | \`recentSearches\` | \`RecentSearch[]\` | | 搜索历史 |
 | \`placeholder\` | \`string\` | | 输入框占位文本 |
 | \`onImageSearch\` | \`() => void\` | | 以图搜图回调(不传则不渲染按钮) |
@@ -265,7 +268,7 @@ kxccaqvx14
   args: {
     chipConfigs: defaultChipConfigs,
     storageNamespace: 'storybook-filter-chip-bar',
-    statusOptions: defaultStatusOptions,
+    tabs: defaultTabs,
     onFiltersChange: fn(),
   },
 };
@@ -355,7 +358,7 @@ export const WithStatusCounts: Story = {
   },
   args: {
     initialSearchText: '审核状态:通过',
-    statusCounts: {
+
       [-1]: 0,
       [0]: 45,
       [1]: 1280,
@@ -384,7 +387,7 @@ export const WithRecentHistory: Story = {
       <FilterChipBar
         chipConfigs={defaultChipConfigs}
         storageNamespace={ns}
-        statusOptions={defaultStatusOptions}
+        tabs={defaultTabs}
         onFiltersChange={fn()}
       />
     );
@@ -409,7 +412,7 @@ export const FullWithCountsAndHistory: Story = {
       <FilterChipBar
         chipConfigs={defaultChipConfigs}
         storageNamespace={ns}
-        statusOptions={defaultStatusOptions}
+        tabs={defaultTabs}
         onFiltersChange={fn()}
         initialSearchText="审核状态:通过 是否出单:出单"
         statusCounts={{
@@ -437,7 +440,7 @@ export const DynamicOptionsLoading: Story = {
   },
   args: {
     initialSearchText: '部门:',
-    dynamicOptionsLoading: true,
+
   },
 };
 
@@ -454,8 +457,8 @@ export const WithDynamicOptions: Story = {
   },
   args: {
     initialSearchText: '部门:',
-    dynamicOptionsLoading: false,
-    dynamicOptions: {
+
+
       部门: [
         { value: 1, label: '运营一部' },
         { value: 2, label: '运营二部' },
@@ -541,7 +544,7 @@ export const WithRightExtra: Story = {
   },
   args: {
     initialSearchText: '审核状态:通过',
-    statusCounts: {
+
       [-1]: 0,
       [0]: 45,
       [1]: 1280,
@@ -558,19 +561,19 @@ export const CustomStatusOptions: Story = {
     docs: {
       description: {
         story:
-          '状态栏完全由 `statusOptions` prop 驱动。不同业务页面可以传入不同的状态选项。' +
+          '状态栏完全由 `tabs` prop 驱动。不同业务页面可以传入不同的状态选项。' +
           '示例使用了"待处理/处理中/已完成"替代默认的审核状态。',
       },
     },
   },
   args: {
-    statusOptions: [
+    tabs: [
       { value: -1, label: '全部' },
       { value: 1, label: '待处理' },
       { value: 2, label: '处理中' },
       { value: 3, label: '已完成' },
     ],
-    statusCounts: {
+
       [-1]: 10,
       [1]: 45,
       [2]: 23,
@@ -585,13 +588,13 @@ export const WithoutStatusBar: Story = {
     docs: {
       description: {
         story:
-          '不传 `statusOptions` 或传空数组,底部状态栏不渲染。' +
+          '不传 `tabs` 或传空数组,底部状态栏不渲染。' +
           '适用于不需要状态切换的纯搜索场景。',
       },
     },
   },
   args: {
-    statusOptions: [],
+    tabs: [],
   },
 };
 
@@ -685,7 +688,7 @@ export const DarkMode: Story = {
       <FilterChipBar
         chipConfigs={defaultChipConfigs}
         storageNamespace="storybook-dark-demo"
-        statusOptions={defaultStatusOptions}
+        tabs={defaultTabs}
         onFiltersChange={fn()}
         initialSearchText="审核状态:通过"
       />
