@@ -247,3 +247,76 @@ Real-time result count inline as user types.
 | Debounced Re-fetch | TCP Congestion Control | Coalesce rapid chip changes into one request | +5 lines |
 
 **Total: +35 lines, 2 robustness improvements.** The component went from "detects errors" to "corrects errors", and from "request-per-change" to "request-per-batch" — both straight from the communication engineering playbook.
+
+---
+
+# Psychology Foundations
+
+> A search bar is not just a data interface — it's a cognitive interface. Every keystroke is a decision, every suggestion is feedback, every syntax rule is a learning curve. Psychology tells us how to design for the human mind.
+
+## Validation: Already Embodied Principles
+
+Most cognitive psychology principles are already embedded in the component's design:
+
+| Principle | How It's Applied |
+|-----------|-----------------|
+| **Recognition over Recall** (Nielsen) | Suggestion dropdown lets users *recognize* options instead of *recalling* names |
+| **Cognitive Load Theory** (Sweller) | One search box replaces N dropdowns, freeing working memory |
+| **Operant Conditioning** (Skinner) | Green highlight = positive reinforcement; FEC "Did you mean?" = guided correction (not punishment) |
+| **Gestalt Principles** | Suggestions grouped by proximity (history \| filters), styled by similarity |
+| **Flow State** (Csikszentmihalyi) | 150ms blur + 200ms debounce tuned to human cognitive rhythm |
+| **Least Effort Principle** | Aliases (`st:pass`), prefixes (`#tag`), presets (1 click) minimize user effort |
+
+These don't require new code — they validate that the existing design aligns with how human cognition works.
+
+---
+
+## 7. Progressive Discovery — Vygotsky's Zone of Proximal Development
+
+### Psychological Principle
+Lev Vygotsky's ZPD theory: learners progress most when given support at the edge of their current ability — not too far ahead (anxiety), not too far behind (boredom). The "scaffolding" is removed as the learner grows.
+
+### Problem (Dunning-Kruger Effect)
+New users don't know what they don't know. They use the search bar for free-text search without discovering:
+- `key:value` syntax (3rd use — ready to learn)
+- Aliases like `st:pass` (8th use — mastered syntax, ready for shortcuts)
+- `/` keyboard shortcut (15th use — power user emerging)
+- Preset saving (25th use — expert ready)
+
+Teaching all features upfront = cognitive overload (violates Sweller). Teaching nothing = ability gap persists (Dunning-Kruger). The solution: **teach at the moment of readiness**.
+
+### Insight
+Track usage count in localStorage. At predefined thresholds, surface a one-time, dismissable hint that introduces the next feature in the learning progression:
+
+```
+Usage  3 → "💡 Type field:value to filter — e.g., Status:Passing"
+Usage  8 → "💡 Tip: aliases like st:pass save keystrokes"
+Usage 15 → "💡 Press / to instantly focus the search bar"
+Usage 25 → "💡 Click ⭐ to save and reuse frequent searches"
+```
+
+Each hint appears once, then is marked as seen. The progression mirrors Vygotsky's scaffolding:
+1. **Novice** (usage 1-2): Free text — zero learning curve
+2. **Beginner** (usage 3-7): Discovers structured syntax — ZPD scaffolding
+3. **Intermediate** (usage 8-14): Discovers aliases — efficiency boost
+4. **Advanced** (usage 15-24): Discovers keyboard shortcut — flow optimization
+5. **Expert** (usage 25+): Discovers presets — mastery
+
+### Implementation
+- `progressive.ts`: Usage counter + hint scheduler (localStorage-backed)
+- `hook.ts`: `incrementUsage()` on each search commit, `getPendingHint()` checks threshold
+- `FilterChipBar.tsx`: Amber-tinted banner below search bar, auto-dismissable
+- Customizable: `hints` prop lets apps override default progression
+
+### Why Not a Tutorial?
+Tutorials violate Flow State (Csikszentmihalyi) — they interrupt the primary task. Progressive discovery is **contextual** and **self-paced**: the hint appears during actual usage, not in a separate learning context. The user learns by doing, not by reading.
+
+---
+
+## Summary (Psychology)
+
+| Feature | Psych Concept | Key Insight | Complexity Added |
+|---------|--------------|-------------|-----------------|
+| Progressive Discovery Hints | ZPD + Dunning-Kruger | Teach features at the moment of cognitive readiness | +60 lines |
+
+**The component now supports the full human learning journey**: from novice (free text) to expert (aliases + prefixes + presets), with contextual scaffolding at each transition point.

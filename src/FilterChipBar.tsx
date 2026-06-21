@@ -507,6 +507,18 @@ export default function FilterChipBar({
           )}
         </div>
       )}
+
+      {fcb.pendingHint && (
+        <div className="mt-2 flex items-center gap-2 rounded-md bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 px-3 py-1.5 text-xs text-amber-900 dark:text-amber-100">
+          <span className="flex-1">{fcb.pendingHint.text}</span>
+          <button
+            onClick={fcb.dismissHint}
+            className="shrink-0 text-amber-600 dark:text-amber-400 hover:text-amber-900 dark:hover:text-amber-100 transition-colors"
+          >
+            ✕
+          </button>
+        </div>
+      )}
     </div>
   );
 }

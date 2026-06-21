@@ -27,6 +27,14 @@ export { parseCurrentToken, parseQuery, matchConfig, type ParsedToken } from './
 export { tokenizeSearchText, truncate } from './tokenize';
 export { levenshtein, findClosest } from './fuzzy';
 export {
+  DEFAULT_HINTS,
+  getUsageCount,
+  incrementUsage,
+  getPendingHint,
+  markHintSeen,
+  type ProgressiveHint,
+} from './progressive';
+export {
   useFilterChipBar,
   type UseFilterChipBarOptions,
   type UseFilterChipBarReturn,

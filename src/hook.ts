@@ -17,6 +17,13 @@ import {
 import { parseCurrentToken, parseQuery, type ParsedToken } from './parser';
 import { tokenizeSearchText } from './tokenize';
 import { findClosest } from './fuzzy';
+import {
+  DEFAULT_HINTS,
+  getPendingHint,
+  incrementUsage,
+  markHintSeen,
+  type ProgressiveHint,
+} from './progressive';
 
 const TYPE_HINTS: Record<string, string> = {
   select: 'Select',
@@ -38,6 +45,7 @@ export interface UseFilterChipBarOptions {
   fontInfo?: { fontSize: number; fontFamily: string };
   searchResultCount?: number;
   searchLoading?: boolean;
+  hints?: ProgressiveHint[];
 }
 
 export interface UseFilterChipBarReturn {
@@ -82,6 +90,9 @@ export interface UseFilterChipBarReturn {
   buildShareUrl: (preset: SearchPreset) => string;
   clearRecent: () => void;
 
+  pendingHint: ProgressiveHint | null;
+  dismissHint: () => void;
+
   onInputScroll: (scrollLeft: number) => void;
 }
 
@@ -95,6 +106,7 @@ export function useFilterChipBar({
   fontInfo,
   searchResultCount,
   searchLoading,
+  hints = DEFAULT_HINTS,
 }: UseFilterChipBarOptions): UseFilterChipBarReturn {
   const inputRef = useRef<HTMLInputElement>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -171,9 +183,21 @@ export function useFilterChipBar({
       );
       cbRef.current?.({ searchText: text, chips: cleaned, freeText, tab: s });
       pendingSearchRef.current = text.trim() || null;
+      const count = incrementUsage(storageNamespace);
+      const hint = getPendingHint(storageNamespace, hints);
+      if (hint) setPendingHint(hint);
     },
-    [chipConfigs, allOptions],
+    [chipConfigs, allOptions, storageNamespace, hints],
   );
+
+  const [pendingHint, setPendingHint] = useState<ProgressiveHint | null>(null);
+
+  const dismissHint = useCallback(() => {
+    if (pendingHint) {
+      markHintSeen(storageNamespace, pendingHint);
+      setPendingHint(null);
+    }
+  }, [pendingHint, storageNamespace]);
 
   useEffect(() => {
     applyFilters(searchText, tab);
@@ -554,6 +578,8 @@ export function useFilterChipBar({
   handleDeletePreset,
   buildShareUrl,
   clearRecent,
+  pendingHint,
+  dismissHint,
   onInputScroll,
 };
 }
