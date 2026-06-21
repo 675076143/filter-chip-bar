@@ -1,11 +1,17 @@
 import type { Preview } from '@storybook/react';
-import { ConfigProvider } from 'antd';
-import zhCN from 'antd/locale/zh_CN';
 import '../src/styles/globals.css';
 
 const preview: Preview = {
   parameters: {
     controls: { matchers: { color: /(background|color)$/i, date: /Date$/i } },
+    layout: 'padded',
+    backgrounds: {
+      default: 'light',
+      values: [
+        { name: 'light', value: '#ffffff' },
+        { name: 'dark', value: 'hsl(240 10% 3.9%)' },
+      ],
+    },
   },
   globalTypes: {
     locale: {
@@ -22,11 +28,14 @@ const preview: Preview = {
     },
   },
   decorators: [
-    (Story) => (
-      <ConfigProvider locale={zhCN}>
-        <Story />
-      </ConfigProvider>
-    ),
+    (Story, context) => {
+      const isDark = context.globals.backgrounds === 'dark';
+      return (
+        <div className={isDark ? 'dark' : ''} style={{ minHeight: '100%' }}>
+          <Story />
+        </div>
+      );
+    },
   ],
 };
 
