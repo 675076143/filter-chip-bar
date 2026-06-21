@@ -125,6 +125,16 @@ const chipConfigs: ChipConfig[] = [
   { type: 'input', label: 'Name', aliases: ['name'] },
   { type: 'numberRange', label: 'Orders', aliases: ['orders'], min: 0 },
   {
+    type: 'select',
+    label: 'User',
+    prefix: '@',
+    options: [
+      { value: 'robin', label: 'Robin' },
+      { value: 'alice', label: 'Alice' },
+      { value: 'bob', label: 'Bob' },
+    ],
+  },
+  {
     type: 'multiSelect',
     label: 'Tags',
     prefix: '#',
@@ -151,6 +161,7 @@ const examples = [
   'Orders:>=500',
   '-Status:Pending',
   '#urgent',
+  '@Robin',
   '/docs',
   'Status:Pasing',
   'SKU:kxccaqvx12',
