@@ -27,8 +27,10 @@ export function tokenizeSearchText(
     }
 
     const { config, valuePart: valueStr } = matched;
-    const displayLabel = config.prefix && cleanPart.startsWith(config.prefix)
-      ? `${config.prefix}${config.label.toLowerCase()}`
+    const isPrefix = !!(config.prefix && cleanPart.startsWith(config.prefix));
+
+    const label = isPrefix
+      ? config.prefix!
       : cleanPart.includes(':')
         ? cleanPart.slice(0, cleanPart.indexOf(':'))
         : config.label;
@@ -45,11 +47,12 @@ export function tokenizeSearchText(
 
     return {
       type: 'chip' as const,
-      label: displayLabel,
+      label,
       value: valueStr,
       isNegated,
       isLabelValid: true,
       isValueValid,
+      isPrefix,
       truncated: valueStr.length > TRUNCATE_LIMIT,
     };
   });

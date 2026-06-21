@@ -76,6 +76,7 @@ export type TextToken =
       isNegated: boolean;
       isLabelValid: boolean;
       isValueValid: boolean;
+      isPrefix: boolean;
       truncated: boolean;
     };
 

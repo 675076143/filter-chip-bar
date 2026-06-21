@@ -109,7 +109,7 @@ export default function FilterChipBar({
       <span key={key}>
         {t.isNegated && <span className="text-destructive font-semibold">-</span>}
         <span className="text-foreground">{t.label}</span>
-        <span className="text-muted-foreground">:</span>
+        {!t.isPrefix && <span className="text-muted-foreground">:</span>}
         <span className={cn(valueColor, valueBg, 'rounded-sm')}>
           {t.truncated ? truncate(t.value) : t.value}
         </span>

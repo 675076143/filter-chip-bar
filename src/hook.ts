@@ -614,6 +614,27 @@ function buildSuggestions(
       });
     const usedLabels = neg ? usedNeg : usedPos;
     const lower = matchPrefix.toLowerCase();
+
+    if (!neg && lower.startsWith('/')) {
+      const cmdQuery = lower.slice(1);
+      const matchedCommands = commands.filter((cmd) =>
+        !cmdQuery || cmd.keywords.some((kw) => kw.toLowerCase().includes(cmdQuery)),
+      );
+      if (matchedCommands.length > 0) {
+        suggestions.push({ value: '', label: 'Commands', isHeader: true });
+        matchedCommands.forEach((cmd) => {
+          suggestions.push({
+            value: '',
+            label: cmd.label,
+            hint: cmd.hint,
+            action: 'command' as const,
+            command: cmd,
+          });
+        });
+      }
+      return suggestions;
+    }
+
     const filterSuggestions = chipConfigs
       .filter((f) => {
         if (usedLabels.has(f.label)) return false;
