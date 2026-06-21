@@ -27,7 +27,7 @@ export function tokenizeSearchText(
     }
 
     const { config, valuePart: valueStr } = matched;
-    const isPrefix = !!(config.prefix && cleanPart.startsWith(config.prefix));
+    const isPrefix = !!(config.prefix && cleanPart.toLowerCase().startsWith(config.prefix.toLowerCase()));
 
     const label = isPrefix
       ? config.prefix!
@@ -40,7 +40,9 @@ export function tokenizeSearchText(
       if (config.type === 'select' || config.type === 'multiSelect') {
         const vals = valueStr.split(',').map((s) => s.trim()).filter(Boolean);
         const opts = resolvedOptions?.[config.label] ?? [];
-        return vals.length > 0 && vals.every((v) => opts.some((o) => o.label === v));
+        return vals.length > 0 && vals.every((v) =>
+          opts.some((o) => o.label.toLowerCase() === v.toLowerCase()),
+        );
       }
       return true;
     })();

@@ -10,7 +10,7 @@ export interface ParsedToken {
 
 export function matchConfig(token: string, chipConfigs: ChipConfig[]): { config: ChipConfig; valuePart: string } | null {
   for (const config of chipConfigs) {
-    if (config.prefix && token.startsWith(config.prefix)) {
+    if (config.prefix && token.toLowerCase().startsWith(config.prefix.toLowerCase())) {
       return { config, valuePart: token.slice(config.prefix.length) };
     }
   }
@@ -18,7 +18,10 @@ export function matchConfig(token: string, chipConfigs: ChipConfig[]): { config:
   if (colonIdx === -1) return null;
   const label = token.slice(0, colonIdx);
   const valuePart = token.slice(colonIdx + 1);
-  const config = chipConfigs.find((f) => f.label === label || f.aliases?.includes(label));
+  const config = chipConfigs.find(
+    (f) => f.label.toLowerCase() === label.toLowerCase()
+      || f.aliases?.some((a) => a.toLowerCase() === label.toLowerCase()),
+  );
   return config ? { config, valuePart } : null;
 }
 
@@ -76,17 +79,17 @@ export function parseQuery(
       if (cleanRawValue.includes(',')) {
         const parts = cleanRawValue.split(',').map((s) => s.trim()).filter(Boolean);
         const values = parts
-          .map((p) => resolvedOpts.find((o) => o.label === p)?.value)
+          .map((p) => resolvedOpts.find((o) => o.label.toLowerCase() === p.toLowerCase())?.value)
           .filter((v): v is string | number => v !== undefined);
         if (values.length > 0) chips[chipKey] = values;
       } else {
-        const opt = resolvedOpts.find((o) => o.label === cleanRawValue);
+        const opt = resolvedOpts.find((o) => o.label.toLowerCase() === cleanRawValue.toLowerCase());
         if (opt) chips[chipKey] = opt.value;
       }
     } else if (config.type === 'multiSelect') {
       const parts = cleanRawValue.split(',').map((s) => s.trim()).filter(Boolean);
       const values = parts
-        .map((p) => resolvedOpts.find((o) => o.label === p)?.value)
+        .map((p) => resolvedOpts.find((o) => o.label.toLowerCase() === p.toLowerCase())?.value)
         .filter((v): v is string | number => v !== undefined);
       if (values.length > 0) chips[chipKey] = values;
     } else if (config.type === 'input') {

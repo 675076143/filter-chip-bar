@@ -717,7 +717,7 @@ function buildSuggestions(
 
     suggestions = suggestions.concat(
       opts
-        .filter((o) => !selectedLabels.includes(o.label))
+        .filter((o) => !selectedLabels.some((s) => s.toLowerCase() === o.label.toLowerCase()))
         .filter((o) => !lower || o.label.toLowerCase().includes(lower))
         .map((o) => {
           const selPrefix = selectedLabels.length > 0 ? selectedLabels.join(',') + ',' : '';
