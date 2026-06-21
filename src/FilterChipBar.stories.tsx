@@ -358,13 +358,7 @@ export const WithStatusCounts: Story = {
   },
   args: {
     initialSearchText: '审核状态:通过',
-
-      [-1]: 0,
-      [0]: 45,
-      [1]: 1280,
-      [2]: 23,
-      [3]: 7,
-    },
+    tabs: tabsWithCounts,
   },
 };
 
@@ -412,16 +406,9 @@ export const FullWithCountsAndHistory: Story = {
       <FilterChipBar
         chipConfigs={defaultChipConfigs}
         storageNamespace={ns}
-        tabs={defaultTabs}
+        tabs={tabsWithCounts}
         onFiltersChange={fn()}
         initialSearchText="审核状态:通过 是否出单:出单"
-        statusCounts={{
-          [-1]: 0,
-          [0]: 45,
-          [1]: 1280,
-          [2]: 23,
-          [3]: 7,
-        }}
       />
     );
   },
@@ -457,19 +444,6 @@ export const WithDynamicOptions: Story = {
   },
   args: {
     initialSearchText: '部门:',
-
-
-      部门: [
-        { value: 1, label: '运营一部' },
-        { value: 2, label: '运营二部' },
-        { value: 3, label: '运营三部' },
-      ],
-      运营人员: [
-        { value: '张三', label: '张三' },
-        { value: '李四', label: '李四' },
-        { value: '王五', label: '王五' },
-      ],
-    },
   },
 };
 
@@ -544,13 +518,7 @@ export const WithRightExtra: Story = {
   },
   args: {
     initialSearchText: '审核状态:通过',
-
-      [-1]: 0,
-      [0]: 45,
-      [1]: 1280,
-      [2]: 23,
-      [3]: 7,
-    },
+    tabs: tabsWithCounts,
     rightExtra: <span style={{ color: '#999' }}>自定义操作区</span>,
   },
 };
@@ -568,17 +536,11 @@ export const CustomStatusOptions: Story = {
   },
   args: {
     tabs: [
-      { value: -1, label: '全部' },
-      { value: 1, label: '待处理' },
-      { value: 2, label: '处理中' },
-      { value: 3, label: '已完成' },
+      { value: -1, label: '全部', count: 10 },
+      { value: 1, label: '待处理', count: 45 },
+      { value: 2, label: '处理中', count: 23 },
+      { value: 3, label: '已完成', count: 1280 },
     ],
-
-      [-1]: 10,
-      [1]: 45,
-      [2]: 23,
-      [3]: 1280,
-    },
   },
 };
 
