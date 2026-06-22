@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { FilterChipBar, type ChipConfig, type TabOption, type FilterChipBarResult } from 'filter-chip-bar';
-import { BookOpen, Package, Globe, Github, Terminal, Sparkles, ArrowRight, Languages } from 'lucide-react';
+import { BookOpen, Package, Globe, Github, Terminal, Sparkles, ArrowRight, Languages, FileText } from 'lucide-react';
 
 const i18n = {
   en: {
@@ -400,6 +400,15 @@ function App() {
           >
             <Package className="size-4" />
             npm
+          </a>
+          <a
+            href="https://www.robin-tech.top/programming/yi-ge-sou-suo-kuang-de-shi-shi.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors"
+          >
+            <FileText className="size-4" />
+            Blog
           </a>
           <a
             href={lang === 'zh' ? 'https://github.com/675076143/filter-chip-bar/blob/main/README.md' : 'https://github.com/675076143/filter-chip-bar/blob/main/README.zh-CN.md'}
