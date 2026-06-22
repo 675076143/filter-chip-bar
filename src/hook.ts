@@ -89,6 +89,7 @@ export interface UseFilterChipBarReturn {
   handleDeletePreset: (id: string) => void;
   buildShareUrl: (preset: SearchPreset) => string;
   clearRecent: () => void;
+  removeRecent: (text: string) => void;
 
   pendingHint: ProgressiveHint | null;
   dismissHint: () => void;
@@ -234,6 +235,14 @@ export function useFilterChipBar({
   const clearRecent = useCallback(() => {
     setRecentSearches([]);
     saveRecent(storageNamespace, []);
+  }, [storageNamespace]);
+
+  const removeRecent = useCallback((text: string) => {
+    setRecentSearches((prev) => {
+      const next = prev.filter((e) => e.text !== text);
+      saveRecent(storageNamespace, next);
+      return next;
+    });
   }, [storageNamespace]);
 
   useEffect(() => {
@@ -578,6 +587,7 @@ export function useFilterChipBar({
   handleDeletePreset,
   buildShareUrl,
   clearRecent,
+  removeRecent,
   pendingHint,
   dismissHint,
   onInputScroll,

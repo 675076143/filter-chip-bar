@@ -154,28 +154,27 @@ export default function FilterChipBar({
                 fcb.setSearchText(h.text);
                 fcb.setDropdownOpen(false);
               }}
-              className="px-3 py-1 cursor-pointer text-xs text-foreground flex items-center gap-0.5 hover:bg-accent transition-colors"
+              className="group px-3 py-1 cursor-pointer text-xs text-foreground flex items-center gap-0.5 hover:bg-accent transition-colors"
             >
               <Clock className="size-[11px] text-muted-foreground/60 shrink-0" />
               <span className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
                 {h.text.length > 20 ? h.text.slice(0, 17) + '...' : h.text}
               </span>
-              <span className="text-[10px] text-muted-foreground/60 shrink-0 tabular-nums">
+              <span className="text-[10px] text-muted-foreground/60 shrink-0 tabular-nums group-hover:hidden">
                 {h.total}
               </span>
+              <button
+                onMouseDown={(ev) => {
+                  ev.preventDefault();
+                  ev.stopPropagation();
+                  fcb.removeRecent(h.text);
+                }}
+                className="hidden group-hover:flex items-center justify-center size-3.5 shrink-0 text-muted-foreground hover:text-destructive transition-colors"
+              >
+                <X className="size-3" />
+              </button>
             </div>
           ))}
-          {!fcb.searchText && (
-            <div
-              onMouseDown={(ev) => {
-                ev.preventDefault();
-                fcb.clearRecent();
-              }}
-              className="px-3 py-1 cursor-pointer text-xs text-muted-foreground/80 hover:bg-accent transition-colors"
-            >
-              Clear history
-            </div>
-          )}
         </div>
       )}
       <div className="flex-1 max-h-80 overflow-y-auto py-0.5" role="listbox" id="fcb-listbox">
