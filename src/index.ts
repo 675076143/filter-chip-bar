@@ -1,8 +1,4 @@
 export {
-  default as FilterChipBarAntd6,
-  type FilterChipBarAntd6Props,
-} from './adapters/FilterChipBarAntd6';
-export {
   default as FilterChipBar,
   type FilterChipBarProps,
 } from './FilterChipBar';
