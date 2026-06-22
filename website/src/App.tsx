@@ -16,7 +16,7 @@ const i18n = {
     copy: 'copy',
     docsLinks: ['Storybook Docs', 'README (EN)', 'Design Notes'],
     featuresHeading: 'Features',
-    disciplinesHeading: '7 Features · 6 Disciplines',
+    disciplinesHeading: '9 Features',
     syntaxHeading: 'Search Syntax',
     syntaxExamples: [
       { syntax: 'key:value', desc: 'Filter by field', example: 'Status:Passing' },
@@ -31,15 +31,16 @@ const i18n = {
       { syntax: 'typo', desc: 'Auto-correct (FEC)', example: 'Pasing → Passing' },
       { syntax: 'free text', desc: 'Full-text search', example: 'kxccaqvx12' },
     ],
-    footer: 'MIT License · Built with React + Radix UI + Tailwind CSS · 48 tests · 6 disciplines',
+    footer: 'MIT License · Built with React + Radix UI + Tailwind CSS',
     features: [
       { title: 'Structured Filtering', desc: 'Type Status:Passing to filter by field. Negation with -Status:Pending.', icon: '🔍' },
-      { title: 'Multi-Protocol Prefix', desc: '#tag, @user, >date — FDMA multiplexing on one channel.', icon: '#️⃣' },
-      { title: 'Label Aliases', desc: 'st:pass = Status:Passing. Lossless compression for power users.', icon: '⚡' },
-      { title: 'Forward Error Correction', desc: 'Typo? "Did you mean Passing?" — Levenshtein auto-correction.', icon: '🛡️' },
+      { title: 'Multi-Protocol Prefix', desc: '#tag for tags, @user for mentions, /cmd for actions.', icon: '#️⃣' },
+      { title: 'Label Aliases', desc: 'st:pass = Status:Passing. Shortcuts for frequently used fields.', icon: '⚡' },
+      { title: 'Typo Correction', desc: 'Misspelled a value? "Did you mean Passing?" — one click to fix.', icon: '🛡️' },
       { title: 'Command Palette', desc: 'Type /docs or /install for quick navigation and actions.', icon: '⌘' },
-      { title: 'Cascading Filters', desc: 'options(chips) — dependent fields auto-resolve via graph traversal.', icon: '🔗' },
-      { title: 'Progressive Discovery', desc: 'Hints appear as you learn — ZPD scaffolding, not tutorials.', icon: '💡' },
+      { title: 'Cascading Filters', desc: 'Selecting a department automatically filters available teams.', icon: '🔗' },
+      { title: 'Progressive Hints', desc: 'Tips appear after a few uses — learn as you go, no tutorials.', icon: '💡' },
+      { title: 'Case Insensitive', desc: 'status:passing works the same as Status:Passing.', icon: '🔤' },
       { title: 'Headless Architecture', desc: 'useFilterChipBar() hook + any renderer (shadcn / antd6 / custom).', icon: '🧠' },
     ],
     disciplines: [
@@ -64,7 +65,7 @@ const i18n = {
     copy: '复制',
     docsLinks: ['Storybook 文档', 'README (中文)', '设计笔记'],
     featuresHeading: '特性',
-    disciplinesHeading: '7 个特性 · 6 个学科',
+    disciplinesHeading: '9 个特性',
     syntaxHeading: '搜索语法',
     syntaxExamples: [
       { syntax: 'key:value', desc: '按字段筛选', example: 'Status:Passing' },
@@ -79,15 +80,16 @@ const i18n = {
       { syntax: '笔误', desc: '自动纠错 (FEC)', example: 'Pasing → Passing' },
       { syntax: '自由文本', desc: '全文搜索', example: 'kxccaqvx12' },
     ],
-    footer: 'MIT 协议 · 基于 React + Radix UI + Tailwind CSS · 48 个测试 · 6 个学科',
+    footer: 'MIT 协议 · 基于 React + Radix UI + Tailwind CSS',
     features: [
       { title: '结构化筛选', desc: '输入 Status:Passing 按字段筛选。-Status:Pending 排除匹配。', icon: '🔍' },
-      { title: '多协议前缀', desc: '#tag、@user、>date — FDMA 频分复用,一个信道多种语法。', icon: '#️⃣' },
-      { title: '标签别名', desc: 'st:pass = Status:Passing。面向 power user 的无损压缩。', icon: '⚡' },
-      { title: '前向纠错 (FEC)', desc: '打错了?"Did you mean Passing?" — Levenshtein 自动纠正。', icon: '🛡️' },
+      { title: '多协议前缀', desc: '#tag 标签、@user 提及、/cmd 命令,一个框里混用。', icon: '#️⃣' },
+      { title: '标签别名', desc: 'st:pass = Status:Passing。常用字段的简写。', icon: '⚡' },
+      { title: '笔误纠正', desc: '打错了?"Did you mean Passing?" 一键修正。', icon: '🛡️' },
       { title: '命令面板', desc: '输入 /docs 或 /install 快速导航和执行操作。', icon: '⌘' },
-      { title: '级联筛选', desc: 'options(chips) — 依赖字段通过图遍历自动 resolve。', icon: '🔗' },
-      { title: '渐进式发现', desc: '使用中学习 — ZPD 脚手架,不是教程。', icon: '💡' },
+      { title: '级联筛选', desc: '选了部门后,团队列表自动过滤为该部门的团队。', icon: '🔗' },
+      { title: '渐进提示', desc: '用过几次后自动弹出功能提示——边用边学。', icon: '💡' },
+      { title: '大小写不敏感', desc: 'status:passing 和 Status:Passing 效果相同。', icon: '🔤' },
       { title: 'Headless 架构', desc: 'useFilterChipBar() hook + 任意 renderer (shadcn / antd6 / 自定义)。', icon: '🧠' },
     ],
     disciplines: [
@@ -299,12 +301,15 @@ function App() {
                 {copied ? '✓' : t.copy}
               </button>
             </div>
-            <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+            <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
               <a href="https://filter-chip-bar.vercel.app" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors">
                 <ArrowRight className="size-3" /> {t.docsLinks[0]}
               </a>
               <a href={lang === 'zh' ? 'https://github.com/675076143/filter-chip-bar/blob/main/README.zh-CN.md' : 'https://github.com/675076143/filter-chip-bar/blob/main/README.md'} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors">
                 <ArrowRight className="size-3" /> {t.docsLinks[1]}
+              </a>
+              <a href="https://www.robin-tech.top/programming/yi-ge-sou-suo-kuang-de-shi-shi.html" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors">
+                <ArrowRight className="size-3" /> Blog
               </a>
               <a href={lang === 'zh' ? 'https://github.com/675076143/filter-chip-bar/blob/main/DESIGN.zh-CN.md' : 'https://github.com/675076143/filter-chip-bar/blob/main/DESIGN.md'} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors">
                 <ArrowRight className="size-3" /> {t.docsLinks[2]}
@@ -357,17 +362,20 @@ function App() {
           </div>
         </div>
 
-        <div className="w-full max-w-3xl mt-12">
+        <div className="w-full max-w-3xl mt-16">
           <h2 className="text-sm font-semibold text-[hsl(var(--muted-foreground))] uppercase tracking-wide text-center mb-6">
-            {t.disciplinesHeading}
+            Architecture
           </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-center text-xs">
-            {t.disciplines.map((d) => (
-              <div key={d.name} className="rounded-md border border-[hsl(var(--border))] p-3">
-                <div className="font-semibold mb-0.5">{d.name}</div>
-                <div className="text-[hsl(var(--muted-foreground))]">{d.detail}</div>
+          <div className="rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--muted))] p-6 text-center">
+            <div className="font-mono text-xs sm:text-sm text-[hsl(var(--muted-foreground))] leading-relaxed">
+              <div className="font-semibold text-[hsl(var(--foreground))]">useFilterChipBar()</div>
+              <div className="text-[hsl(var(--muted-foreground))]/60 my-1">↕ headless hook · zero UI deps</div>
+              <div className="flex flex-wrap justify-center gap-2 mt-3">
+                <span className="px-3 py-1 rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))]">shadcn <span className="text-[hsl(var(--muted-foreground))]">(default)</span></span>
+                <span className="px-3 py-1 rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))]">antd6</span>
+                <span className="px-3 py-1 rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))]">custom</span>
               </div>
-            ))}
+            </div>
           </div>
         </div>
       </main>
