@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { FilterChipBar, type ChipConfig, type TabOption, type FilterChipBarResult } from 'filter-chip-bar';
-import { BookOpen, Package, Globe, Github, Terminal, Sparkles, ArrowRight, Languages, FileText } from 'lucide-react';
+import { BookOpen, Package, Globe, Github, FileText } from 'lucide-react';
 
 const i18n = {
   en: {
-    badge: 'Headless filter + command palette for React',
-    tagline: 'Search as the entry point.',
-    tagline2: 'One box to filter, navigate, and command.',
+    eyebrow: 'Design System · v0.2.0',
+    heroTitle: 'filter-chip-bar',
+    tagline: 'Search as the entry point. One box to filter, navigate, and command.',
     placeholder: 'Search or type filters...  (try: st:pass or #urgent)',
     tryLabel: 'Try:',
     orType: 'Or type',
@@ -14,10 +14,15 @@ const i18n = {
     resultLabel: 'onFiltersChange result',
     quickStart: 'Quick Start',
     copy: 'copy',
-    docsLinks: ['Storybook Docs', 'README (EN)', 'Design Notes'],
-    featuresHeading: 'Features',
-    disciplinesHeading: '9 Features',
-    syntaxHeading: 'Search Syntax',
+    demoNum: '00 · Demo',
+    demoTItle: 'Try It Live',
+    demoDesc: 'Type a filter value like "Passing" and see it auto-suggest the matching field. Click any example below to pre-fill.',
+    featuresNum: '01 · Features',
+    featuresTitle: 'Capabilities',
+    featuresDesc: 'Nine features, each backed by a discipline: math, comms theory, psychology, physics, engineering, and philosophy.',
+    syntaxNum: '02 · Syntax',
+    syntaxTitle: 'Search Syntax',
+    syntaxDesc: 'One input box supports structured filtering, negation, aliases, prefixes, commands, and auto-correction.',
     syntaxExamples: [
       { syntax: 'key:value', desc: 'Filter by field', example: 'Status:Passing' },
       { syntax: '-key:value', desc: 'Exclude (negation)', example: '-Status:Pending' },
@@ -29,19 +34,26 @@ const i18n = {
       { syntax: 'key:>=100', desc: 'Numeric compare', example: 'Orders:>=500' },
       { syntax: 'key:100~200', desc: 'Numeric range', example: 'Orders:100~500' },
       { syntax: 'typo', desc: 'Auto-correct (FEC)', example: 'Pasing → Passing' },
+      { syntax: '"value"', desc: 'Cross-field suggestion', example: 'Passing → Status:Passing' },
       { syntax: 'free text', desc: 'Full-text search', example: 'kxccaqvx12' },
     ],
+    installNum: '03 · Install',
+    installTitle: 'Quick Start',
+    installDesc: 'One command, then import and render. Headless hook for custom UIs, built-in shadcn and antd6 renderers.',
+    architectureNum: '04 · Architecture',
+    architectureTitle: 'Headless by Design',
+    architectureDesc: 'useFilterChipBar() is pure logic with zero UI dependency. Renderers are separate — shadcn (default), antd6, or build your own.',
     footer: 'MIT License · Built with React + Radix UI + Tailwind CSS',
     features: [
       { title: 'Structured Filtering', desc: 'Type Status:Passing to filter by field. Negation with -Status:Pending.', icon: '🔍' },
-      { title: 'Multi-Protocol Prefix', desc: '#tag for tags, @user for mentions, /cmd for actions.', icon: '#️⃣' },
+      { title: 'Multi-Protocol Prefix', desc: '#tag for tags, @user for mentions, /cmd for actions — mix freely in one box.', icon: '#️⃣' },
       { title: 'Label Aliases', desc: 'st:pass = Status:Passing. Shortcuts for frequently used fields.', icon: '⚡' },
-      { title: 'Typo Correction', desc: 'Misspelled a value? "Did you mean Passing?" — one click to fix.', icon: '🛡️' },
+      { title: 'Typo Correction', desc: 'Misspelled a value? "Did you mean Passing?" — one click to fix via FEC.', icon: '🛡️' },
+      { title: 'Value Discovery', desc: 'Type a value like "Passing" and get the matching field suggested automatically.', icon: '🎯' },
       { title: 'Command Palette', desc: 'Type /docs or /install for quick navigation and actions.', icon: '⌘' },
       { title: 'Cascading Filters', desc: 'Selecting a department automatically filters available teams.', icon: '🔗' },
-      { title: 'Progressive Hints', desc: 'Tips appear after a few uses — learn as you go, no tutorials.', icon: '💡' },
-      { title: 'Case Insensitive', desc: 'status:passing works the same as Status:Passing.', icon: '🔤' },
-      { title: 'Headless Architecture', desc: 'useFilterChipBar() hook + any renderer (shadcn / antd6 / custom).', icon: '🧠' },
+      { title: 'Progressive Hints', desc: 'Tips appear after a few uses — learn as you go, no tutorials needed.', icon: '💡' },
+      { title: 'Case Insensitive', desc: 'status:passing works the same as Status:Passing throughout.', icon: '🔤' },
     ],
     disciplines: [
       { name: 'Math', detail: 'Graph · Info Theory · Bayes' },
@@ -53,9 +65,9 @@ const i18n = {
     ],
   },
   zh: {
-    badge: '面向 React 的 Headless 筛选 + 命令面板组件',
-    tagline: '搜索即入口。',
-    tagline2: '一个框,筛选、导航、执行操作。',
+    eyebrow: '设计系统 · v0.2.0',
+    heroTitle: 'filter-chip-bar',
+    tagline: '搜索即入口。一个框，筛选、导航、执行操作。',
     placeholder: '搜索或输入筛选条件...  (试试: st:pass 或 #urgent)',
     tryLabel: '试试:',
     orType: '或输入',
@@ -63,10 +75,15 @@ const i18n = {
     resultLabel: 'onFiltersChange 结果',
     quickStart: '快速开始',
     copy: '复制',
-    docsLinks: ['Storybook 文档', 'README (中文)', '设计笔记'],
-    featuresHeading: '特性',
-    disciplinesHeading: '9 个特性',
-    syntaxHeading: '搜索语法',
+    demoNum: '00 · 演示',
+    demoTItle: '在线体验',
+    demoDesc: '直接输入筛选值如 "Passing"，系统自动提示对应字段。点击下方示例快速填充。',
+    featuresNum: '01 · 特性',
+    featuresTitle: '核心能力',
+    featuresDesc: '九个特性，各有学科支撑：数学、通信学、心理学、物理学、工程学、哲学。',
+    syntaxNum: '02 · 语法',
+    syntaxTitle: '搜索语法',
+    syntaxDesc: '一个输入框支持结构化筛选、排除、别名、前缀、命令、自动纠错。',
     syntaxExamples: [
       { syntax: 'key:value', desc: '按字段筛选', example: 'Status:Passing' },
       { syntax: '-key:value', desc: '排除匹配项', example: '-Status:Pending' },
@@ -78,19 +95,26 @@ const i18n = {
       { syntax: 'key:>=100', desc: '数值比较', example: 'Orders:>=500' },
       { syntax: 'key:100~200', desc: '数值区间', example: 'Orders:100~500' },
       { syntax: '笔误', desc: '自动纠错 (FEC)', example: 'Pasing → Passing' },
+      { syntax: '"值"', desc: '跨字段建议', example: 'Passing → Status:Passing' },
       { syntax: '自由文本', desc: '全文搜索', example: 'kxccaqvx12' },
     ],
+    installNum: '03 · 安装',
+    installTitle: '快速开始',
+    installDesc: '一行命令安装，导入即用。Headless hook 适合自定义 UI，内置 shadcn / antd6 渲染器。',
+    architectureNum: '04 · 架构',
+    architectureTitle: 'Headless 设计',
+    architectureDesc: 'useFilterChipBar() 纯逻辑零 UI 依赖。渲染器独立——shadcn（默认）、antd6，或自己写。',
     footer: 'MIT 协议 · 基于 React + Radix UI + Tailwind CSS',
     features: [
       { title: '结构化筛选', desc: '输入 Status:Passing 按字段筛选。-Status:Pending 排除匹配。', icon: '🔍' },
-      { title: '多协议前缀', desc: '#tag 标签、@user 提及、/cmd 命令,一个框里混用。', icon: '#️⃣' },
+      { title: '多协议前缀', desc: '#tag 标签、@user 提及、/cmd 命令，一个框里混用。', icon: '#️⃣' },
       { title: '标签别名', desc: 'st:pass = Status:Passing。常用字段的简写。', icon: '⚡' },
-      { title: '笔误纠正', desc: '打错了?"Did you mean Passing?" 一键修正。', icon: '🛡️' },
+      { title: '笔误纠正', desc: '打错了？"Did you mean Passing?" 一键修正。', icon: '🛡️' },
+      { title: '智能值匹配', desc: '输入 "Passing"，自动建议对应字段 "Status:Passing"。', icon: '🎯' },
       { title: '命令面板', desc: '输入 /docs 或 /install 快速导航和执行操作。', icon: '⌘' },
-      { title: '级联筛选', desc: '选了部门后,团队列表自动过滤为该部门的团队。', icon: '🔗' },
+      { title: '级联筛选', desc: '选了部门后，团队列表自动过滤为该部门的团队。', icon: '🔗' },
       { title: '渐进提示', desc: '用过几次后自动弹出功能提示——边用边学。', icon: '💡' },
       { title: '大小写不敏感', desc: 'status:passing 和 Status:Passing 效果相同。', icon: '🔤' },
-      { title: 'Headless 架构', desc: 'useFilterChipBar() hook + 任意 renderer (shadcn / antd6 / 自定义)。', icon: '🧠' },
     ],
     disciplines: [
       { name: '数学', detail: '图论 · 信息论 · 贝叶斯' },
@@ -168,6 +192,7 @@ const examples = [
   '@Robin',
   '/docs',
   'Status:Pasing',
+  'Passing',
   'SKU:kxccaqvx12',
 ];
 
@@ -180,256 +205,221 @@ function App() {
   const t = i18n[lang];
 
   return (
-    <div className="min-h-screen flex flex-col bg-[hsl(var(--background))] text-[hsl(var(--foreground))] relative">
-      <button
-        onClick={() => setLang(lang === 'en' ? 'zh' : 'en')}
-        className="fixed top-4 right-4 z-50 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))] text-xs font-medium text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--accent-foreground))] transition-colors shadow-sm"
-      >
-        <Languages className="size-3.5" />
-        {lang === 'en' ? '中文' : 'English'}
-      </button>
-
-      <main className="flex-1 flex flex-col items-center justify-center px-4 pt-20 pb-12">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-[hsl(var(--border))] bg-[hsl(var(--secondary))] text-xs font-medium text-[hsl(var(--muted-foreground))] mb-6">
-          <Sparkles className="size-3" />
-          {t.badge}
-        </div>
-
-        <h1 className="text-5xl sm:text-7xl font-extrabold tracking-tight text-center mb-3">
-          filter-chip-bar
-        </h1>
-        <div className="flex items-center justify-center gap-2 mb-4">
-          <a href="https://www.npmjs.com/package/filter-chip-bar" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] hover:opacity-80 transition-opacity">
-            npm v0.2.0
-          </a>
-          <a href="https://github.com/675076143/filter-chip-bar" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-[hsl(var(--secondary))] text-[hsl(var(--secondary-foreground))] border border-[hsl(var(--border))] hover:bg-[hsl(var(--accent))] transition-colors">
-            MIT
-          </a>
-        </div>
-        <p className="text-lg sm:text-xl text-[hsl(var(--muted-foreground))] mb-12 text-center max-w-lg">
-          {t.tagline}<br />{t.tagline2}
-        </p>
-
-        <div className="w-full max-w-2xl">
-          <FilterChipBar
-            key={mountKey}
-            chipConfigs={chipConfigs}
-            storageNamespace="website-demo"
-            tabs={tabs}
-            onFiltersChange={setResult}
-            initialSearchText={initialText}
-            placeholder={t.placeholder}
-            commands={[
-              {
-                keywords: ['docs', 'storybook', 'documentation'],
-                label: lang === 'zh' ? '查看文档' : 'View Documentation',
-                hint: 'Open Storybook',
-                action: () => window.open('https://filter-chip-bar.vercel.app', '_blank'),
-              },
-              {
-                keywords: ['github', 'source', 'code'],
-                label: lang === 'zh' ? '查看源码' : 'View Source',
-                hint: 'GitHub',
-                action: () => window.open('https://github.com/675076143/filter-chip-bar', '_blank'),
-              },
-              {
-                keywords: ['install', 'npm', 'download'],
-                label: 'npm install filter-chip-bar',
-                hint: lang === 'zh' ? '复制命令' : 'Copy command',
-                action: () => {
-                  navigator.clipboard.writeText('npm install filter-chip-bar');
-                },
-              },
-            ]}
-          />
-
-          <div className="flex flex-col items-center gap-3 mt-6">
-            <div className="flex flex-wrap gap-2 justify-center items-center">
-              <span className="text-xs text-[hsl(var(--muted-foreground))] mr-1">
-                {t.tryLabel}
-              </span>
-              {examples.map((ex) => (
-                <button
-                  key={ex}
-                  onClick={() => {
-                    setInitialText(ex);
-                    setMountKey((k) => k + 1);
-                  }}
-                  className="px-2.5 py-1 text-xs font-mono rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--secondary))] text-[hsl(var(--secondary-foreground))] hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--accent-foreground))] transition-colors"
-                >
-                  {ex}
-                </button>
-              ))}
-            </div>
-            <p className="text-xs text-[hsl(var(--muted-foreground))]/70">
-              {t.orType} <kbd className="px-1.5 py-0.5 rounded border border-[hsl(var(--border))] bg-[hsl(var(--muted))] font-mono text-[10px]">/docs</kbd>{' '}
-              <kbd className="px-1.5 py-0.5 rounded border border-[hsl(var(--border))] bg-[hsl(var(--muted))] font-mono text-[10px]">/install</kbd>{' '}
-              <kbd className="px-1.5 py-0.5 rounded border border-[hsl(var(--border))] bg-[hsl(var(--muted))] font-mono text-[10px]">/github</kbd>{' '}
-              {t.forActions}
-            </p>
+    <div style={{ background: 'var(--canvas)', color: 'var(--near-black)', fontFamily: 'var(--serif)', minHeight: '100vh' }}>
+      <main style={{ maxWidth: '1120px', margin: '0 auto', padding: '88px 64px 120px' }}>
+        {/* ============ HERO ============ */}
+        <header style={{ paddingBottom: '40px', borderBottom: '1px solid var(--border-cream)', marginBottom: '48px' }}>
+          <div className="eyebrow">
+            <span>{t.eyebrow}</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <button
+                onClick={() => setLang(lang === 'en' ? 'zh' : 'en')}
+                className="btn-ghost"
+                style={{ height: '30px', padding: '0 12px', fontSize: '12px' }}
+              >
+                {lang === 'en' ? '中文' : 'English'}
+              </button>
+              <a href="https://github.com/675076143/filter-chip-bar" target="_blank" rel="noopener" aria-label="GitHub">
+                <Github size={15} />
+              </a>
+            </span>
           </div>
+          <h1 className="hero-title">
+            filter-chip-bar<span className="cn">欄</span>
+          </h1>
+          <p className="section-lede" style={{ fontSize: '17px', maxWidth: '640px', marginBottom: '20px' }}>
+            {t.tagline}
+          </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+            <span className="tag" style={{ background: '#EEF2F7', color: 'var(--brand)' }}>React 17+</span>
+            <span className="tag" style={{ background: '#EEF2F7', color: 'var(--brand)' }}>Headless Hook</span>
+            <span className="tag" style={{ background: '#EEF2F7', color: 'var(--brand)' }}>Shadcn + Antd6</span>
+            <span className="tag" style={{ background: '#EEF2F7', color: 'var(--brand)' }}>48 Tests</span>
+          </div>
+        </header>
+
+        {/* ============ 00 · DEMO ============ */}
+        <section style={{ marginBottom: '72px' }}>
+          <p className="section-num">{t.demoNum}</p>
+          <h2 className="section-title">{t.demoTItle}</h2>
+          <p className="section-lede">{t.demoDesc}</p>
+
+          <div className="card" style={{ marginBottom: '20px' }}>
+            <FilterChipBar
+              key={mountKey}
+              chipConfigs={chipConfigs}
+              storageNamespace="website-demo"
+              tabs={tabs}
+              onFiltersChange={setResult}
+              initialSearchText={initialText}
+              placeholder={t.placeholder}
+              commands={[
+                {
+                  keywords: ['docs', 'storybook', 'documentation'],
+                  label: lang === 'zh' ? '查看文档' : 'View Documentation',
+                  hint: 'Open Storybook',
+                  action: () => window.open('https://filter-chip-bar.vercel.app', '_blank'),
+                },
+                {
+                  keywords: ['github', 'source', 'code'],
+                  label: lang === 'zh' ? '查看源码' : 'View Source',
+                  hint: 'GitHub',
+                  action: () => window.open('https://github.com/675076143/filter-chip-bar', '_blank'),
+                },
+                {
+                  keywords: ['install', 'npm', 'download'],
+                  label: 'npm install filter-chip-bar',
+                  hint: lang === 'zh' ? '复制命令' : 'Copy command',
+                  action: () => {
+                    navigator.clipboard.writeText('npm install filter-chip-bar');
+                  },
+                },
+              ]}
+            />
+          </div>
+
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', marginBottom: '12px' }}>
+            <span style={{ fontSize: '13px', color: 'var(--stone)' }}>{t.tryLabel}</span>
+            {examples.map((ex) => (
+              <button
+                key={ex}
+                className="try-btn"
+                onClick={() => {
+                  setInitialText(ex);
+                  setMountKey((k) => k + 1);
+                }}
+              >
+                {ex}
+              </button>
+            ))}
+          </div>
+          <p style={{ fontSize: '12px', color: 'var(--stone)' }}>
+            {t.orType} <code style={{ fontFamily: 'var(--mono)', fontSize: '11px', background: 'var(--ivory)', padding: '1px 6px', borderRadius: '3px' }}>/docs</code>{' '}
+            <code style={{ fontFamily: 'var(--mono)', fontSize: '11px', background: 'var(--ivory)', padding: '1px 6px', borderRadius: '3px' }}>/install</code>{' '}
+            <code style={{ fontFamily: 'var(--mono)', fontSize: '11px', background: 'var(--ivory)', padding: '1px 6px', borderRadius: '3px' }}>/github</code>{' '}
+            {t.forActions}
+          </p>
 
           {result && (result.searchText || (result.chips && Object.keys(result.chips).length > 0)) && (
-            <div className="mt-6 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--muted))] p-4">
-              <div className="text-xs font-semibold text-[hsl(var(--muted-foreground))] uppercase tracking-wide mb-2">
-                {t.resultLabel}
-              </div>
-              <pre className="text-xs font-mono text-[hsl(var(--foreground))] overflow-x-auto">
-                {JSON.stringify(result, null, 2)}
-              </pre>
+            <div className="result-panel" style={{ marginTop: '16px' }}>
+              <span className="label">{t.resultLabel}</span>
+              {JSON.stringify(result, null, 2)}
             </div>
           )}
-        </div>
+        </section>
 
-        <div className="w-full max-w-3xl mt-20">
-          <div className="rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--muted))] p-6">
-            <div className="flex items-center gap-2 mb-3">
-              <Terminal className="size-4 text-[hsl(var(--muted-foreground))]" />
-              <span className="text-sm font-semibold">{t.quickStart}</span>
-            </div>
-            <div className="flex items-center gap-2 font-mono text-sm bg-[hsl(var(--background))] rounded-md border border-[hsl(var(--border))] px-4 py-3">
-              <span className="text-[hsl(var(--muted-foreground))]">$</span>
-              <span>npm install filter-chip-bar</span>
-              <button
-                onClick={() => {
-                  navigator.clipboard.writeText('npm install filter-chip-bar');
-                  setCopied(true);
-                  setTimeout(() => setCopied(false), 2000);
-                }}
-                className="ml-auto text-xs text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors"
-              >
-                {copied ? '✓' : t.copy}
-              </button>
-            </div>
-            <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-              <a href="https://filter-chip-bar.vercel.app" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors">
-                <ArrowRight className="size-3" /> {t.docsLinks[0]}
-              </a>
-              <a href={lang === 'zh' ? 'https://github.com/675076143/filter-chip-bar/blob/main/README.zh-CN.md' : 'https://github.com/675076143/filter-chip-bar/blob/main/README.md'} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors">
-                <ArrowRight className="size-3" /> {t.docsLinks[1]}
-              </a>
-              <a href="https://www.robin-tech.top/programming/yi-ge-sou-suo-kuang-de-shi-shi.html" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors">
-                <ArrowRight className="size-3" /> Blog
-              </a>
-              <a href={lang === 'zh' ? 'https://github.com/675076143/filter-chip-bar/blob/main/DESIGN.zh-CN.md' : 'https://github.com/675076143/filter-chip-bar/blob/main/DESIGN.md'} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors">
-                <ArrowRight className="size-3" /> {t.docsLinks[2]}
-              </a>
-            </div>
-          </div>
-        </div>
+        {/* ============ 01 · FEATURES ============ */}
+        <section style={{ marginBottom: '72px' }}>
+          <p className="section-num">{t.featuresNum}</p>
+          <h2 className="section-title">{t.featuresTitle}</h2>
+          <p className="section-lede">{t.featuresDesc}</p>
 
-        <div className="w-full max-w-3xl mt-12">
-          <h2 className="text-sm font-semibold text-[hsl(var(--muted-foreground))] uppercase tracking-wide text-center mb-6">
-            {t.featuresHeading}
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="feature-grid">
             {t.features.map((f) => (
-              <div key={f.title} className="rounded-lg border border-[hsl(var(--border))] p-4 hover:border-[hsl(var(--ring))]/30 transition-colors">
-                <div className="flex items-start gap-3">
-                  <span className="text-xl shrink-0">{f.icon}</span>
-                  <div>
-                    <div className="text-sm font-semibold mb-0.5">{f.title}</div>
-                    <div className="text-xs text-[hsl(var(--muted-foreground))] leading-relaxed">{f.desc}</div>
-                  </div>
-                </div>
+              <div key={f.title} className="feature-card">
+                <span className="icon">{f.icon}</span>
+                <h3>{f.title}</h3>
+                <p>{f.desc}</p>
               </div>
             ))}
           </div>
-        </div>
 
-        <div className="w-full max-w-3xl mt-12">
-          <h2 className="text-sm font-semibold text-[hsl(var(--muted-foreground))] uppercase tracking-wide text-center mb-6">
-            {t.syntaxHeading}
-          </h2>
-          <div className="rounded-lg border border-[hsl(var(--border))] overflow-hidden">
-            <table className="w-full text-xs">
+          <div className="quote-bar" style={{ marginTop: '32px' }}>
+            Beauty = constraints × intention ÷ noise. One accent, warm neutrals, serif authority, generous whitespace.
+          </div>
+        </section>
+
+        {/* ============ 02 · SYNTAX ============ */}
+        <section style={{ marginBottom: '72px' }}>
+          <p className="section-num">{t.syntaxNum}</p>
+          <h2 className="section-title">{t.syntaxTitle}</h2>
+          <p className="section-lede">{t.syntaxDesc}</p>
+
+          <div style={{ background: 'var(--ivory)', border: '1px solid var(--border-cream)', borderRadius: 'var(--radius-xl)', overflow: 'hidden' }}>
+            <table className="syntax-table">
+              <thead>
+                <tr>
+                  <th>Syntax</th>
+                  <th>Description</th>
+                  <th>Example</th>
+                </tr>
+              </thead>
               <tbody>
                 {t.syntaxExamples.map((row, i) => (
-                  <tr key={i} className={i % 2 === 0 ? 'bg-[hsl(var(--muted))]/40' : ''}>
-                    <td className="px-4 py-2.5 font-mono text-[hsl(var(--foreground))] whitespace-nowrap">
-                      {row.syntax}
-                    </td>
-                    <td className="px-4 py-2.5 text-[hsl(var(--muted-foreground))]">
-                      {row.desc}
-                    </td>
-                    <td className="px-4 py-2.5 font-mono text-[hsl(var(--primary))] whitespace-nowrap">
-                      {row.example}
-                    </td>
+                  <tr key={i}>
+                    <td>{row.syntax}</td>
+                    <td>{row.desc}</td>
+                    <td>{row.example}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        </div>
+        </section>
 
-        <div className="w-full max-w-3xl mt-16">
-          <h2 className="text-sm font-semibold text-[hsl(var(--muted-foreground))] uppercase tracking-wide text-center mb-6">
-            Architecture
-          </h2>
-          <div className="rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--muted))] p-6 text-center">
-            <div className="font-mono text-xs sm:text-sm text-[hsl(var(--muted-foreground))] leading-relaxed">
-              <div className="font-semibold text-[hsl(var(--foreground))]">useFilterChipBar()</div>
-              <div className="text-[hsl(var(--muted-foreground))]/60 my-1">↕ headless hook · zero UI deps</div>
-              <div className="flex flex-wrap justify-center gap-2 mt-3">
-                <span className="px-3 py-1 rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))]">shadcn <span className="text-[hsl(var(--muted-foreground))]">(default)</span></span>
-                <span className="px-3 py-1 rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))]">antd6</span>
-                <span className="px-3 py-1 rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))]">custom</span>
-              </div>
+        {/* ============ 03 · INSTALL ============ */}
+        <section style={{ marginBottom: '72px' }}>
+          <p className="section-num">{t.installNum}</p>
+          <h2 className="section-title">{t.installTitle}</h2>
+          <p className="section-lede">{t.installDesc}</p>
+
+          <div className="code-block">
+            <span className="c">$ </span>npm install filter-chip-bar
+          </div>
+          <div style={{ display: 'flex', gap: '12px', marginTop: '16px', flexWrap: 'wrap' }}>
+            <button className="btn-primary" onClick={() => { navigator.clipboard.writeText('npm install filter-chip-bar'); setCopied(true); setTimeout(() => setCopied(false), 2000); }}>
+              {copied ? 'Copied' : t.copy}
+            </button>
+            <a href="https://filter-chip-bar.vercel.app" target="_blank" rel="noopener noreferrer" className="btn-ghost">Storybook →</a>
+            <a href="https://github.com/675076143/filter-chip-bar" target="_blank" rel="noopener noreferrer" className="btn-ghost">GitHub →</a>
+          </div>
+        </section>
+
+        {/* ============ 04 · ARCHITECTURE ============ */}
+        <section style={{ marginBottom: '72px' }}>
+          <p className="section-num">{t.architectureNum}</p>
+          <h2 className="section-title">{t.architectureTitle}</h2>
+          <p className="section-lede">{t.architectureDesc}</p>
+
+          <div className="card" style={{ textAlign: 'center' }}>
+            <div style={{ fontFamily: 'var(--serif)', fontSize: '16px', fontWeight: 500, color: 'var(--near-black)', marginBottom: '8px' }}>
+              useFilterChipBar()
+            </div>
+            <div style={{ fontSize: '12px', color: 'var(--stone)', marginBottom: '16px' }}>
+              headless hook · zero UI deps
+            </div>
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <span className="tag">shadcn (default)</span>
+              <span className="tag">antd6</span>
+              <span className="tag">custom</span>
             </div>
           </div>
-        </div>
+        </section>
       </main>
 
-      <footer className="border-t border-[hsl(var(--border))] py-6 px-4">
-        <div className="max-w-2xl mx-auto flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm">
-          <a
-            href="https://filter-chip-bar.vercel.app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors"
-          >
-            <BookOpen className="size-4" />
-            Storybook
-          </a>
-          <a
-            href="https://github.com/675076143/filter-chip-bar"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors"
-          >
-            <Github className="size-4" />
-            GitHub
-          </a>
-          <a
-            href="https://www.npmjs.com/package/filter-chip-bar"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors"
-          >
-            <Package className="size-4" />
-            npm
-          </a>
-          <a
-            href="https://www.robin-tech.top/programming/yi-ge-sou-suo-kuang-de-shi-shi.html"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors"
-          >
-            <FileText className="size-4" />
-            Blog
-          </a>
-          <a
-            href={lang === 'zh' ? 'https://github.com/675076143/filter-chip-bar/blob/main/README.md' : 'https://github.com/675076143/filter-chip-bar/blob/main/README.zh-CN.md'}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors"
-          >
-            <Globe className="size-4" />
-            {lang === 'zh' ? 'English' : '中文文档'}
-          </a>
-        </div>
-        <div className="text-center mt-4 text-xs text-[hsl(var(--muted-foreground))]/60">
-          {t.footer}
+      {/* ============ FOOTER ============ */}
+      <footer style={{ borderTop: '1px solid var(--border-cream)', padding: '40px 64px', maxWidth: '1120px', margin: '0 auto' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+          <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
+            <a href="https://filter-chip-bar.vercel.app" target="_blank" rel="noopener noreferrer" className="footer-link" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <BookOpen size={14} /> Storybook
+            </a>
+            <a href="https://github.com/675076143/filter-chip-bar" target="_blank" rel="noopener noreferrer" className="footer-link" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Github size={14} /> GitHub
+            </a>
+            <a href="https://www.npmjs.com/package/filter-chip-bar" target="_blank" rel="noopener noreferrer" className="footer-link" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Package size={14} /> npm
+            </a>
+            <a href="https://www.robin-tech.top/programming/yi-ge-sou-suo-kuang-de-shi-shi.html" target="_blank" rel="noopener noreferrer" className="footer-link" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <FileText size={14} /> Blog
+            </a>
+            <a href={lang === 'zh' ? 'https://github.com/675076143/filter-chip-bar/blob/main/README.md' : 'https://github.com/675076143/filter-chip-bar/blob/main/README.zh-CN.md'} target="_blank" rel="noopener noreferrer" className="footer-link" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Globe size={14} /> {lang === 'zh' ? 'English' : '中文'}
+            </a>
+          </div>
+          <div style={{ fontSize: '12px', color: 'var(--stone)' }}>
+            {t.footer}
+          </div>
         </div>
       </footer>
     </div>
