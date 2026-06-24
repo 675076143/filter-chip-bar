@@ -489,20 +489,26 @@ export function useFilterChipBar({
       } else if (e.key === 'Escape') {
         setDropdownOpen(false);
         setActiveIdx(-1);
-      } else if (e.key === 'Tab' && activeIdx >= 0 && activeIdx < suggestions.length) {
-        const s = suggestions[activeIdx];
-        if (s.isDivider) return;
+      } else if (e.key === 'Tab') {
+        const real = suggestions.filter((s) => !s.isDivider && !s.isHeader);
+        const target = activeIdx >= 0 && activeIdx < suggestions.length
+          ? suggestions[activeIdx]
+          : real.length === 1
+            ? real[0]
+            : null;
+
+        if (!target || target.isDivider) return;
         e.preventDefault();
-        if (s.action === 'command' && s.command) {
-          executeCommand(s.command);
-        } else if (s.action === 'toggleNegate') {
+        if (target.action === 'command' && target.command) {
+          executeCommand(target.command);
+        } else if (target.action === 'toggleNegate') {
           handleToggleNegate();
-        } else if (s.action === 'recent') {
-          setSearchText(s.value);
+        } else if (target.action === 'recent') {
+          setSearchText(target.value);
           setDropdownOpen(false);
-          applyFilters(s.value, tab);
+          applyFilters(target.value, tab);
         } else {
-          handleSuggestionClick(s.value);
+          handleSuggestionClick(target.value);
         }
       } else if (e.key === 'Backspace') {
         const cursorPos = e.currentTarget.selectionStart;
