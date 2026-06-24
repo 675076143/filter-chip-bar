@@ -105,11 +105,9 @@
 
 ### 方案一：表单式筛选（下拉框 + 日期选择器 + 复选框）
 
-最传统的做法，几乎每个后台都在用。
+最传统的做法，几乎每个后台都在用。比如 Ant Design Pro 的 QueryFilter：
 
-```
-[状态 ▼] [部门 ▼] [日期 📅] [☑ 仅看异常] [搜索]
-```
+![](assets/antd-filter-form.png)
 
 **优点**：直观，新手零学习成本，每个控件的含义一目了然。
 
@@ -126,9 +124,7 @@
 
 一个搜索框，后端做模糊匹配。
 
-```
-[🔍 搜索...]
-```
+![](assets/google-search.png)
 
 **优点**：UI 极简，开发成本低。
 
@@ -144,13 +140,7 @@
 
 电商常见的模式：左侧搜索框 + 右侧分面导航。
 
-```
-[🔍 搜索...]                    品牌 ▼
-                                价格 ▼
-结果列表:                        评分 ▼
-  商品A                         分类 ▼
-  商品B
-```
+![](assets/amazon-faceted-search.png)
 
 **优点**：搜索和筛选共存，分面统计（"品牌A 有 23 件"）帮助用户决策。
 
@@ -166,9 +156,7 @@
 
 Linear、Raycast、shadcn/ui 的 [cmdk](https://cmdk.paco.me/) 用的模式。
 
-```
-按 ⌘K → 弹出搜索框 → 输入命令 → 执行
-```
+![](assets/cmdk-command-palette.png)
 
 **优点**：键盘友好，模糊匹配，可以跳转 + 执行操作。
 
@@ -184,9 +172,7 @@ Linear、Raycast、shadcn/ui 的 [cmdk](https://cmdk.paco.me/) 用的模式。
 
 GitHub Issues 和 Gmail 用的模式：搜索框支持 `key:value` 语法。
 
-```
-is:open label:bug author:robin created:>2024-01-01
-```
+![](assets/github-issues-search.png)
 
 **优点**：表达力强，一行文字可以表达复杂查询，键盘友好。
 
@@ -202,9 +188,7 @@ is:open label:bug author:robin created:>2024-01-01
 
 试图结合方案一（直观）、方案四（键盘友好）和方案五（表达力），同时解决各自的缺点：
 
-```
-[🔍 Status:Passing -Status:Pending Orders:>=100 #urgent]
-```
+![](assets/filter-chip-bar-demo.png)
 
 | 特性     | 表单式     | 全文搜索 | Faceted  | 命令面板 | GitHub 语法 | FilterChipBar |
 | -------- | ---------- | -------- | -------- | -------- | ----------- | ------------- |
