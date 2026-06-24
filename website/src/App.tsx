@@ -171,32 +171,35 @@ function App() {
         <p className="section-num">{t.demoNum}</p>
         <h2 className="section-title">{t.demoTItle}</h2>
         <p className="section-lede">{t.demoDesc}</p>
-        <div className="demo-card">
-          <FilterChipBar
-            key={mountKey}
-            chipConfigs={chipConfigs}
-            storageNamespace="website-demo"
-            tabs={tabs}
-            onFiltersChange={setResult}
-            initialSearchText={initialText}
-            placeholder={t.placeholder}
-            commands={[
-              { keywords: ['docs','storybook','documentation'], label: lang === 'zh' ? '查看文档' : 'View Documentation', hint: 'Open Storybook', action: () => window.open('https://filter-chip-bar.vercel.app', '_blank') },
-              { keywords: ['github','source','code'], label: lang === 'zh' ? '查看源码' : 'View Source', hint: 'GitHub', action: () => window.open('https://github.com/675076143/filter-chip-bar', '_blank') },
-              { keywords: ['install','npm','download'], label: 'npm install filter-chip-bar', hint: lang === 'zh' ? '复制命令' : 'Copy command', action: () => navigator.clipboard.writeText('npm install filter-chip-bar') },
-            ]}
-          />
+        <div className="comp">
+          <p className="hint">{lang === 'en' ? 'Interactive demo · shadcn renderer · type to see live suggestions' : '交互演示 · shadcn 渲染器 · 键入即见实时建议'}</p>
+          <div className="demo">
+            <FilterChipBar
+              key={mountKey}
+              chipConfigs={chipConfigs}
+              storageNamespace="website-demo"
+              tabs={tabs}
+              onFiltersChange={setResult}
+              initialSearchText={initialText}
+              placeholder={t.placeholder}
+              commands={[
+                { keywords: ['docs','storybook','documentation'], label: lang === 'zh' ? '查看文档' : 'View Documentation', hint: 'Open Storybook', action: () => window.open('https://filter-chip-bar.vercel.app', '_blank') },
+                { keywords: ['github','source','code'], label: lang === 'zh' ? '查看源码' : 'View Source', hint: 'GitHub', action: () => window.open('https://github.com/675076143/filter-chip-bar', '_blank') },
+                { keywords: ['install','npm','download'], label: 'npm install filter-chip-bar', hint: lang === 'zh' ? '复制命令' : 'Copy command', action: () => navigator.clipboard.writeText('npm install filter-chip-bar') },
+              ]}
+            />
+          </div>
+          <div style={{display:'flex',flexWrap:'wrap',gap:6,alignItems:'center',marginTop:20}}>
+            <span style={{fontSize:11,color:'var(--stone)',fontWeight:500,letterSpacing:'0.8px',textTransform:'uppercase'}}>{t.tryLabel}</span>
+            {examples.map(ex => <button key={ex} className="tag" style={{cursor:'pointer',border:'none',background:'#EEF2F7',fontFamily:'var(--mono)',fontSize:11}} onClick={() => { setInitialText(ex); setMountKey(k=>k+1); }}>{ex}</button>)}
+          </div>
+          <p className="hint" style={{marginTop:14,marginBottom:0}}>
+            {t.orType} <code style={{fontFamily:'var(--mono)',fontSize:11,background:'#EEF2F7',color:'var(--brand)',padding:'1px 5px',borderRadius:2}}>/docs</code>{' '}
+            <code style={{fontFamily:'var(--mono)',fontSize:11,background:'#EEF2F7',color:'var(--brand)',padding:'1px 5px',borderRadius:2}}>/install</code>{' '}
+            <code style={{fontFamily:'var(--mono)',fontSize:11,background:'#EEF2F7',color:'var(--brand)',padding:'1px 5px',borderRadius:2}}>/github</code>{' '}
+            {t.forActions}
+          </p>
         </div>
-        <div style={{display:'flex',flexWrap:'wrap',gap:8,alignItems:'center',marginTop:16,marginBottom:10}}>
-          <span style={{fontSize:12,color:'var(--stone)',fontFamily:'var(--serif)'}}>{t.tryLabel}</span>
-          {examples.map(ex => <button key={ex} className="try-btn" onClick={() => { setInitialText(ex); setMountKey(k=>k+1); }}>{ex}</button>)}
-        </div>
-        <p style={{fontSize:11,color:'var(--stone)'}}>
-          {t.orType} <code style={{fontFamily:'var(--mono)',fontSize:11,background:'#EEF2F7',color:'var(--brand)',padding:'1px 5px',borderRadius:2}}>/docs</code>{' '}
-          <code style={{fontFamily:'var(--mono)',fontSize:11,background:'#EEF2F7',color:'var(--brand)',padding:'1px 5px',borderRadius:2}}>/install</code>{' '}
-          <code style={{fontFamily:'var(--mono)',fontSize:11,background:'#EEF2F7',color:'var(--brand)',padding:'1px 5px',borderRadius:2}}>/github</code>{' '}
-          {t.forActions}
-        </p>
         {result && (result.searchText || (result.chips && Object.keys(result.chips).length > 0)) && (
           <div className="result-panel" style={{marginTop:16}}>
             <span className="label">{t.resultLabel}</span>
