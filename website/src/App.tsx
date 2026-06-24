@@ -225,7 +225,7 @@ function App() {
             </span>
           </div>
           <h1 className="hero-title">
-            filter-chip-bar<span className="cn">欄</span>
+            filter-chip-bar
           </h1>
           <p className="section-lede" style={{ fontSize: '17px', maxWidth: '640px', marginBottom: '20px' }}>
             {t.tagline}

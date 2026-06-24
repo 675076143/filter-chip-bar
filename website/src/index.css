@@ -4,6 +4,27 @@
 
 @layer base {
   :root {
+    /* shadcn HSL variables — mapped to Kami palette for FilterChipBar internal use */
+    --background: 48 25% 95%;
+    --foreground: 60 3% 8%;
+    --popover: 48 25% 95%;
+    --popover-foreground: 60 3% 8%;
+    --primary: 215 55% 24%;
+    --primary-foreground: 48 25% 95%;
+    --secondary: 48 33% 97%;
+    --secondary-foreground: 60 3% 8%;
+    --muted: 48 33% 97%;
+    --muted-foreground: 51 3% 41%;
+    --accent: 48 33% 97%;
+    --accent-foreground: 60 3% 8%;
+    --destructive: 0 56% 45%;
+    --destructive-foreground: 48 25% 95%;
+    --border: 49 16% 80%;
+    --input: 49 16% 80%;
+    --ring: 215 55% 24%;
+    --radius: 0.5rem;
+
+    /* Kami design tokens (hex) — for page-level styling */
     --canvas: #f5f4ed;
     --brand: #1B365D;
     --brand-light: #2D5A8A;
