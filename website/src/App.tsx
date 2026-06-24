@@ -182,6 +182,7 @@ function App() {
               onFiltersChange={setResult}
               initialSearchText={initialText}
               placeholder={t.placeholder}
+              locale={lang}
               commands={[
                 { keywords: ['docs','storybook','documentation'], label: lang === 'zh' ? '查看文档' : 'View Documentation', hint: 'Open Storybook', action: () => window.open('https://filter-chip-bar.vercel.app', '_blank') },
                 { keywords: ['github','source','code'], label: lang === 'zh' ? '查看源码' : 'View Source', hint: 'GitHub', action: () => window.open('https://github.com/675076143/filter-chip-bar', '_blank') },

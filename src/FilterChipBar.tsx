@@ -51,6 +51,7 @@ export interface FilterChipBarProps {
   footerExtra?: ReactNode;
   searchResultCount?: number;
   searchLoading?: boolean;
+  locale?: 'en' | 'zh';
 }
 
 export default function FilterChipBar({
@@ -68,6 +69,7 @@ export default function FilterChipBar({
   footerExtra,
   searchResultCount,
   searchLoading,
+  locale = 'en',
 }: FilterChipBarProps) {
   const fcb = useFilterChipBar({
     chipConfigs,
@@ -78,6 +80,7 @@ export default function FilterChipBar({
     onFiltersChange,
     searchResultCount,
     searchLoading,
+    locale,
   });
 
   const [copiedPresetId, setCopiedPresetId] = useState<string | null>(null);

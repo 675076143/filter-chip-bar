@@ -46,6 +46,7 @@ export interface UseFilterChipBarOptions {
   searchResultCount?: number;
   searchLoading?: boolean;
   hints?: ProgressiveHint[];
+  locale?: 'en' | 'zh';
 }
 
 export interface UseFilterChipBarReturn {
@@ -108,6 +109,7 @@ export function useFilterChipBar({
   searchResultCount,
   searchLoading,
   hints = DEFAULT_HINTS,
+  locale = 'en',
 }: UseFilterChipBarOptions): UseFilterChipBarReturn {
   const inputRef = useRef<HTMLInputElement>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -293,7 +295,7 @@ export function useFilterChipBar({
   const textTokens = useMemo(() => tokenizeSearchText(searchText, chipConfigs, allOptions), [searchText, chipConfigs, allOptions]);
 
   const suggestions = useMemo(
-    () => buildSuggestions(searchText, chipConfigs, allOptions, parsedToken, lastSpaceIdx, commands),
+    () => buildSuggestions(searchText, chipConfigs, allOptions, parsedToken, lastSpaceIdx, commands, locale),
     [searchText, chipConfigs, allOptions, parsedToken, lastSpaceIdx, commands],
   );
 
@@ -607,6 +609,7 @@ function buildSuggestions(
   parsedToken: ParsedToken,
   lastSpaceIdx: number,
   commands: ActionCommand[],
+  locale: 'en' | 'zh' = 'en',
 ): SuggestionItem[] {
   let suggestions: SuggestionItem[] = [];
 
@@ -792,13 +795,13 @@ function buildSuggestions(
       suggestions.push({ value: '', label: '', isDivider: true });
       suggestions.push({
         value: '',
-        label: 'Space → next filter',
+        label: locale === 'zh' ? '空格 → 下一个条件' : 'Space → next filter',
         isHeader: true,
       });
       if (isMulti) {
         suggestions.push({
           value: '',
-          label: ', → add value',
+          label: locale === 'zh' ? '逗号 → 添加值' : ', → add value',
           isHeader: true,
         });
       }
