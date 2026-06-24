@@ -37,7 +37,7 @@ function autoPlaceholder(configs: ChipConfig[]): string {
       parts.push(`${cfg.label}:...`);
     }
   }
-  return parts.length > 0 ? `Try: ${parts.join(', ')}` : DEFAULT_PLACEHOLDER;
+  return parts.length > 0 ? `Search or try: ${parts.join(', ')}` : DEFAULT_PLACEHOLDER;
 }
 
 const DEFAULT_SYNTAX_HELP: ReactNode = (
