@@ -24,6 +24,22 @@ import { cn } from './lib/utils';
 
 const DEFAULT_PLACEHOLDER = 'Search or type filters...';
 
+function autoPlaceholder(configs: ChipConfig[]): string {
+  const parts: string[] = [];
+  for (const cfg of configs.slice(0, 4)) {
+    if (cfg.prefix) {
+      const first = Array.isArray(cfg.options) ? cfg.options[0] : null;
+      parts.push(first ? `${cfg.prefix}${first.label}` : `${cfg.prefix}...`);
+    } else if (cfg.type === 'select' || cfg.type === 'multiSelect') {
+      const first = Array.isArray(cfg.options) ? cfg.options[0] : null;
+      parts.push(first ? `${cfg.label}:${first.label}` : `${cfg.label}:...`);
+    } else {
+      parts.push(`${cfg.label}:...`);
+    }
+  }
+  return parts.length > 0 ? `Try: ${parts.join(', ')}` : DEFAULT_PLACEHOLDER;
+}
+
 const DEFAULT_SYNTAX_HELP: ReactNode = (
   <div className="text-xs leading-relaxed max-w-[280px] space-y-0.5">
     <div><b>key:value</b> — Filter by field</div>
@@ -63,7 +79,7 @@ export default function FilterChipBar({
   initialSearchText = '',
   initialTab = -1,
   commands,
-  placeholder = DEFAULT_PLACEHOLDER,
+  placeholder,
   syntaxHelp = DEFAULT_SYNTAX_HELP,
   onImageSearch,
   footerExtra,
@@ -71,6 +87,7 @@ export default function FilterChipBar({
   searchLoading,
   locale = 'en',
 }: FilterChipBarProps) {
+  const resolvedPlaceholder = placeholder ?? autoPlaceholder(chipConfigs);
   const fcb = useFilterChipBar({
     chipConfigs,
     storageNamespace,
@@ -389,7 +406,7 @@ export default function FilterChipBar({
                     {fcb.searchText ? (
                       fcb.textTokens.map(renderTextToken)
                     ) : (
-                      <span className="text-muted-foreground/60">{placeholder}</span>
+                      <span className="text-muted-foreground/60">{resolvedPlaceholder}</span>
                     )}
                   </div>
                 </div>

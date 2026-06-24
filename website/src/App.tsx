@@ -181,7 +181,6 @@ function App() {
               tabs={tabs}
               onFiltersChange={setResult}
               initialSearchText={initialText}
-              placeholder={t.placeholder}
               locale={lang}
               commands={[
                 { keywords: ['docs','storybook','documentation'], label: lang === 'zh' ? '查看文档' : 'View Documentation', hint: 'Open Storybook', action: () => window.open('https://filter-chip-bar.vercel.app', '_blank') },
