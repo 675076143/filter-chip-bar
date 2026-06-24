@@ -361,7 +361,7 @@ export function useFilterChipBar({
         ? chipConfigs.find((f) => f.label === labelMatch[2])
         : undefined;
       const supportsMultiValue =
-        !isPartial && (config?.type === 'multiSelect' || config?.type === 'select');
+        !isPartial && config?.type === 'multiSelect';
       const suffix = isPartial ? '' : supportsMultiValue ? '' : ' ';
       const newText = before + value + suffix;
       setSearchText(newText);
