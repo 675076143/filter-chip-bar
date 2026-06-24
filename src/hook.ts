@@ -786,6 +786,23 @@ function buildSuggestions(
         }
       }
     }
+
+    if (lower && suggestions.length > 1) {
+      const isMulti = cfg.type === 'multiSelect';
+      suggestions.push({ value: '', label: '', isDivider: true });
+      suggestions.push({
+        value: '',
+        label: 'Space → next filter',
+        isHeader: true,
+      });
+      if (isMulti) {
+        suggestions.push({
+          value: '',
+          label: ', → add value',
+          isHeader: true,
+        });
+      }
+    }
   } else if (parsedToken.phase === 'freeText' && parsedToken.filterConfig) {
     const cfg = parsedToken.filterConfig;
     const labelPrefix = cfg.label + ':';
