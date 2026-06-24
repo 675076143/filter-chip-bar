@@ -671,6 +671,35 @@ function buildSuggestions(
       });
     suggestions = suggestions.concat(filterSuggestions);
 
+    // Cross-field value suggestions: match typed text against known option labels
+    // of select/multiSelect chip configs, allowing users to discover filters
+    // by typing option values (e.g. "Passing" → suggest "Status:Passing")
+    if (lower) {
+      const crossFieldSuggestions: SuggestionItem[] = [];
+      chipConfigs
+        .filter((f) => (f.type === 'select' || f.type === 'multiSelect') && !usedLabels.has(f.label))
+        .forEach((cfg) => {
+          const opts = resolvedOptions[cfg.label] ?? [];
+          if (!opts.length) return;
+          opts.forEach((opt) => {
+            if (opt.label.toLowerCase().includes(lower)) {
+              crossFieldSuggestions.push({
+                value: (neg ? '-' : '') + cfg.label + ':' + opt.label,
+                label: cfg.label + ':' + opt.label,
+                hint: cfg.label,
+              });
+            }
+          });
+        });
+
+      if (crossFieldSuggestions.length > 0) {
+        if (suggestions.length > 0) {
+          suggestions.push({ value: '', label: '', isDivider: true });
+        }
+        suggestions = suggestions.concat(crossFieldSuggestions.slice(0, 8));
+      }
+    }
+
     if (!neg && lower) {
       const matchedCommands = commands.filter((cmd) =>
         cmd.keywords.some((kw) => kw.toLowerCase().includes(lower)),
