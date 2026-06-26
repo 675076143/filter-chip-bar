@@ -10,6 +10,13 @@ export {
   type SuggestionItem,
   type TextToken,
   type ActionCommand,
+  type SuggestionVM,
+  type HistoryVM,
+  type PresetVM,
+  type StatusTabVM,
+  type InputVM,
+  type DropdownVM,
+  type FilterChipBarVM,
   loadPresets,
   savePresets,
   loadRecent,
@@ -19,6 +26,7 @@ export { parseCurrentToken, parseQuery, type ParsedToken } from './parser';
 export { tokenizeSearchText, truncate } from './tokenize';
 export {
   useFilterChipBar,
+  useFilterChipBarVM,
   autoPlaceholder,
   type UseFilterChipBarOptions,
   type UseFilterChipBarReturn,

@@ -122,3 +122,72 @@ export function saveRecent(namespace: string, searches: RecentSearch[]): void {
     // quota exceeded or privacy mode — silently ignore
   }
 }
+
+export interface SuggestionVM {
+  key: string;
+  label: string;
+  hint?: string;
+  active: boolean;
+  type: 'item' | 'divider' | 'header';
+  onSelect: () => void;
+}
+
+export interface HistoryVM {
+  key: string;
+  text: string;
+  count: number;
+  onSelect: () => void;
+  onRemove: () => void;
+}
+
+export interface PresetVM {
+  key: string;
+  name: string;
+  searchText: string;
+  onSelect: () => void;
+  onShare: () => void;
+  onDelete: () => void;
+}
+
+export interface StatusTabVM {
+  key: string;
+  label: string;
+  count?: number;
+  active: boolean;
+  onSelect: () => void;
+}
+
+export interface InputVM {
+  ref: React.RefObject<HTMLInputElement | null>;
+  value: string;
+  placeholder: string;
+  textTokens: TextToken[];
+  cursorWidth: number;
+  scrollLeft: number;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  onPaste: (e: React.ClipboardEvent<HTMLInputElement>) => void;
+  onFocus: () => void;
+  onBlur: () => void;
+  onScroll: (scrollLeft: number) => void;
+}
+
+export interface DropdownVM {
+  suggestions: SuggestionVM[];
+  history: HistoryVM[];
+  footer?: string;
+  isOpen: boolean;
+  isLoading: boolean;
+  offsetX: number;
+}
+
+export interface FilterChipBarVM {
+  input: InputVM;
+  dropdown: DropdownVM;
+  presets: PresetVM[];
+  statusTabs: StatusTabVM[];
+  activeFilterCount: number;
+  pendingHint: string | null;
+  isPresetOpen: boolean;
+  setPresetOpen: (open: boolean) => void;
+}

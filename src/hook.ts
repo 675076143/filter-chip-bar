@@ -9,6 +9,14 @@ import {
   type SuggestionItem,
   type TextToken,
   type ActionCommand,
+  type SuggestionVM,
+  type HistoryVM,
+  type PresetVM,
+  type StatusTabVM,
+  type InputVM,
+  type DropdownVM,
+  type FilterChipBarVM,
+  type TabOption,
   loadPresets,
   savePresets,
   loadRecent,
@@ -900,4 +908,89 @@ function buildSuggestions(
   }
 
   return suggestions;
+}
+
+export function useFilterChipBarVM(opts: UseFilterChipBarOptions & { placeholder?: string }): Omit<FilterChipBarVM, 'statusTabs'> {
+  const fcb = useFilterChipBar(opts);
+
+  const suggestions: SuggestionVM[] = useMemo(() => {
+    return fcb.suggestions.map((s, idx) => ({
+      key: s.isDivider ? `divider-${idx}` : s.isHeader ? `header-${s.label}` : s.value,
+      label: s.label,
+      hint: s.hint,
+      active: idx === fcb.activeSuggestionIdx,
+      type: (s.isDivider ? 'divider' : s.isHeader ? 'header' : 'item') as SuggestionVM['type'],
+      onSelect: () => {
+        if (s.action === 'datePicker') return;
+        if (s.action === 'command' && s.command) fcb.executeCommand(s.command);
+        else if (s.action === 'toggleNegate') fcb.handleToggleNegate();
+        else if (s.action === 'recent') {
+          fcb.setSearchText(s.value);
+          fcb.setDropdownOpen(false);
+        } else fcb.handleSuggestionClick(s.value);
+      },
+    }));
+  }, [fcb.suggestions, fcb.activeSuggestionIdx, fcb.handleToggleNegate, fcb.handleSuggestionClick, fcb.executeCommand]);
+
+  const history: HistoryVM[] = useMemo(() => {
+    return fcb.filteredHistory.slice(0, 8).map((h) => ({
+      key: String(h.timestamp),
+      text: h.text,
+      count: h.total,
+      onSelect: () => {
+        fcb.setSearchText(h.text);
+        fcb.setDropdownOpen(false);
+      },
+      onRemove: () => fcb.removeRecent(h.text),
+    }));
+  }, [fcb.filteredHistory, fcb.removeRecent]);
+
+  const presets: PresetVM[] = useMemo(() => {
+    return fcb.presets.map((p) => ({
+      key: p.id,
+      name: p.name,
+      searchText: p.searchText,
+      onSelect: () => fcb.handleLoadPreset(p),
+      onShare: () => {
+        navigator.clipboard.writeText(fcb.buildShareUrl(p));
+      },
+      onDelete: () => fcb.handleDeletePreset(p.id),
+    }));
+  }, [fcb.presets, fcb.handleLoadPreset, fcb.handleDeletePreset, fcb.buildShareUrl]);
+
+  const input: InputVM = useMemo(() => ({
+    ref: fcb.inputRef,
+    value: fcb.searchText,
+    placeholder: opts.placeholder ?? autoPlaceholder(opts.chipConfigs),
+    textTokens: fcb.textTokens,
+    cursorWidth: fcb.dropdownOffsetX,
+    scrollLeft: fcb.inputScrollLeft,
+    onChange: fcb.handleInputChange,
+    onKeyDown: fcb.handleKeyDown,
+    onPaste: fcb.handlePaste,
+    onFocus: () => fcb.setDropdownOpen(true),
+    onBlur: () => {},
+    onScroll: fcb.onInputScroll,
+  }), [fcb, opts.placeholder, opts.chipConfigs]);
+
+  const dropdown: DropdownVM = useMemo(() => ({
+    suggestions,
+    history,
+    footer: fcb.parsedToken.phase === 'filterValue' ? (
+      fcb.parsedToken.filterConfig?.type === 'multiSelect' ? '按逗号可多选' : '按空格继续添加'
+    ) : undefined,
+    isOpen: fcb.isDropdownOpen,
+    isLoading: fcb.isLoadingDynamic,
+    offsetX: fcb.dropdownOffsetX,
+  }), [suggestions, history, fcb.isDropdownOpen, fcb.isLoadingDynamic, fcb.dropdownOffsetX, fcb.parsedToken]);
+
+  return {
+    input,
+    dropdown,
+    presets,
+    activeFilterCount: fcb.activeFilterCount,
+    pendingHint: fcb.pendingHint?.text ?? null,
+    isPresetOpen: fcb.isPresetOpen,
+    setPresetOpen: fcb.setPresetOpen,
+  };
 }
