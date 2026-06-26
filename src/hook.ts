@@ -20,6 +20,7 @@ import { findClosest, levenshtein } from './fuzzy';
 import dayjs from 'dayjs';
 import {
   DEFAULT_HINTS,
+  buildHints,
   getPendingHint,
   incrementUsage,
   markHintSeen,
@@ -47,7 +48,7 @@ export function autoPlaceholder(configs: ChipConfig[]): string {
       parts.push(`${cfg.label}:...`);
     }
   }
-  return parts.length > 0 ? `Try: ${parts.join(', ')}` : 'Search or type filters...';
+  return parts.length > 0 ? `例: ${parts.join(', ')}` : '输入关键词或筛选条件';
 }
 
 const ICON_OFFSET = 14 + 8 + 12;
@@ -129,6 +130,7 @@ export function useFilterChipBar({
   searchLoading,
   hints = DEFAULT_HINTS,
 }: UseFilterChipBarOptions): UseFilterChipBarReturn {
+  const dynamicHints = useMemo(() => hints === DEFAULT_HINTS ? buildHints(chipConfigs) : hints, [chipConfigs, hints]);
   const inputRef = useRef<HTMLInputElement>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -208,10 +210,10 @@ export function useFilterChipBar({
       searchRef.current?.();
       pendingSearchRef.current = text.trim() || null;
       const count = incrementUsage(storageNamespace);
-      const hint = getPendingHint(storageNamespace, hints);
+      const hint = getPendingHint(storageNamespace, dynamicHints);
       if (hint) setPendingHint(hint);
     },
-    [chipConfigs, allOptions, storageNamespace, hints],
+    [chipConfigs, allOptions, storageNamespace, dynamicHints],
   );
 
   const [pendingHint, setPendingHint] = useState<ProgressiveHint | null>(null);

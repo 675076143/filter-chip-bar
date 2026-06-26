@@ -4,11 +4,37 @@ export interface ProgressiveHint {
 }
 
 export const DEFAULT_HINTS: ProgressiveHint[] = [
-  { threshold: 3, text: '💡 Type field:value to filter — e.g., Status:Passing' },
-  { threshold: 8, text: '💡 Tip: aliases like st:pass save keystrokes' },
-  { threshold: 15, text: '💡 Press / to instantly focus the search bar' },
-  { threshold: 25, text: '💡 Click ⭐ to save and reuse frequent searches' },
+  { threshold: 3, text: '💡 输入 字段名:值 快速筛选 — 试试 key:value 语法' },
+  { threshold: 8, text: '💡 按 / 可快速聚焦搜索框' },
+  { threshold: 15, text: '💡 按空格→下一个条件，逗号→多选' },
+  { threshold: 25, text: '💡 点击 ⭐ 可保存常用搜索条件' },
 ];
+
+export function buildHints(configs: { label: string; type?: string; aliases?: string[]; prefix?: string; options?: unknown }[]): ProgressiveHint[] {
+  const selectCfg = configs.find(c => Array.isArray(c.options));
+  const firstOpt = selectCfg && Array.isArray(selectCfg.options) && (selectCfg.options as Array<{ label: string }>)?.[0];
+  const aliasCfg = configs.find(c => c.aliases?.length && c.label);
+
+  const hints: ProgressiveHint[] = [
+    {
+      threshold: 3,
+      text: firstOpt
+        ? `💡 如: ${selectCfg!.prefix ? selectCfg!.prefix + firstOpt.label : selectCfg!.label + ':' + firstOpt.label} — 字段:值 快速筛选`
+        : '💡 字段名:值 可快速筛选，如: 操作人:张三',
+    },
+  ];
+
+  if (aliasCfg) {
+    hints.push({ threshold: 8, text: `💡 别名快速输入，如 ${aliasCfg.aliases![0]}:xxx 代替 ${aliasCfg.label}:xxx` });
+    hints.push({ threshold: 15, text: '💡 按 / 可快速聚焦搜索框' });
+  } else {
+    hints.push({ threshold: 8, text: '💡 按 / 可快速聚焦搜索框' });
+    hints.push({ threshold: 15, text: '💡 按空格→下一个条件，逗号→多选' });
+  }
+
+  hints.push({ threshold: 25, text: '💡 点击 ⭐ 可保存常用搜索条件' });
+  return hints;
+}
 
 const USAGE_KEY = (ns: string) => `${ns}:usage`;
 
