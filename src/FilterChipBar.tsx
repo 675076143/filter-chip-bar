@@ -21,6 +21,7 @@ import { truncate } from './tokenize';
 import { useFilterChipBar, autoPlaceholder } from './hook';
 import { Popover, PopoverTrigger, PopoverContent, PopoverAnchor } from './ui/popover';
 import { cn } from './lib/utils';
+import { CalendarRangePanel } from './CalendarRangePanel';
 
 const DEFAULT_PLACEHOLDER = 'Search or type filters...';
 
@@ -96,6 +97,7 @@ export default function FilterChipBar({
   }, [fcb.isPresetOpen]);
 
   const [copiedPresetId, setCopiedPresetId] = useState<string | null>(null);
+  const [datePickerState, setDatePickerState] = useState<{ prefix: string } | null>(null);
 
   const renderTextToken = (t: TextToken, key: number): ReactNode => {
     if (t.type === 'whitespace') return <span key={key}>{t.text}</span>;
@@ -221,6 +223,10 @@ export default function FilterChipBar({
                 }}
                 onMouseDown={(ev) => {
                   ev.preventDefault();
+                  if (s.action === 'datePicker') {
+                    setDatePickerState({ prefix: s.value });
+                    return;
+                  }
                   if (isCommand && s.command) fcb.executeCommand(s.command);
                   else if (isToggle) fcb.handleToggleNegate();
                   else fcb.handleSuggestionClick(s.value);
@@ -433,7 +439,7 @@ export default function FilterChipBar({
                   onChange={fcb.handleInputChange}
                   onPaste={fcb.handlePaste}
                   onFocus={() => fcb.setDropdownOpen(true)}
-                  onBlur={() => setTimeout(() => fcb.setDropdownOpen(false), 150)}
+                  onBlur={() => !datePickerState && setTimeout(() => fcb.setDropdownOpen(false), 150)}
                   onKeyDown={fcb.handleKeyDown}
                   onScroll={(e) => fcb.onInputScroll(e.currentTarget.scrollLeft)}
                   className="w-full h-full border-none outline-none bg-transparent text-transparent caret-foreground p-0 m-0 relative z-10 text-sm"
@@ -463,8 +469,24 @@ export default function FilterChipBar({
             className="w-[500px] max-h-80 overflow-hidden p-0"
             onOpenAutoFocus={(e) => e.preventDefault()}
             onCloseAutoFocus={(e) => e.preventDefault()}
+            onInteractOutside={datePickerState ? (e) => e.preventDefault() : undefined}
+            onPointerDownOutside={datePickerState ? (e) => e.preventDefault() : undefined}
           >
-            {dropdownContent}
+            {datePickerState ? (
+              <div className="p-2 bg-background rounded-md shadow-lg">
+                <CalendarRangePanel
+                  onChange={({ start, end }) => {
+                    const s = start.format('YYYY-MM-DD HH:mm:ss');
+                    const e = end.format('YYYY-MM-DD HH:mm:ss');
+                    fcb.setSearchText(`${datePickerState.prefix}${s}~${e}`);
+                    setDatePickerState(null);
+                    fcb.setDropdownOpen(false);
+                  }}
+                />
+              </div>
+            ) : (
+              dropdownContent
+            )}
           </PopoverContent>
         </Popover>
 

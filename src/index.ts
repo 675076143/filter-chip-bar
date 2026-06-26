@@ -35,3 +35,4 @@ export {
   type UseFilterChipBarOptions,
   type UseFilterChipBarReturn,
 } from './hook';
+export { CalendarRangePanel } from './CalendarRangePanel';
