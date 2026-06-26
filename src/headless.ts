@@ -32,3 +32,4 @@ export {
   markHintSeen,
   type ProgressiveHint,
 } from './progressive';
+export { CalendarRangePanel } from './CalendarRangePanel';
