@@ -919,7 +919,7 @@ export function useFilterChipBarVM(opts: UseFilterChipBarOptions & { placeholder
       label: s.label,
       hint: s.hint,
       active: idx === fcb.activeSuggestionIdx,
-      type: (s.isDivider ? 'divider' : s.isHeader ? 'header' : 'item') as SuggestionVM['type'],
+      type: (s.action === 'datePicker' ? 'datepicker' : s.isDivider ? 'divider' : s.isHeader ? 'header' : 'item') as SuggestionVM['type'],
       onSelect: () => {
         if (s.action === 'datePicker') return;
         if (s.action === 'command' && s.command) fcb.executeCommand(s.command);

@@ -128,7 +128,7 @@ export interface SuggestionVM {
   label: string;
   hint?: string;
   active: boolean;
-  type: 'item' | 'divider' | 'header';
+  type: 'item' | 'divider' | 'header' | 'datepicker';
   onSelect: () => void;
 }
 
