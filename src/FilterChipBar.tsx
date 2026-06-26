@@ -476,8 +476,8 @@ export default function FilterChipBar({
               <div className="p-2 bg-background rounded-md shadow-lg">
                 <CalendarRangePanel
                   onChange={({ start, end }) => {
-                    const s = start.format('YYYY-MM-DD HH:mm:ss');
-                    const e = end.format('YYYY-MM-DD HH:mm:ss');
+                    const s = start.format('YYYY-MM-DD');
+                    const e = end.format('YYYY-MM-DD');
                     fcb.setSearchText(`${datePickerState.prefix}${s}~${e}`);
                     setDatePickerState(null);
                     fcb.setDropdownOpen(false);
