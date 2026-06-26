@@ -35,6 +35,8 @@ const i18n = {
       { syntax: 'typo', desc: 'Auto-correct (FEC)', example: 'Pasing → Passing' },
       { syntax: '"value"', desc: 'Cross-field suggestion', example: 'Passing → Status:Passing' },
       { syntax: 'free text', desc: 'Full-text search', example: 'kxccaqvx12' },
+      { syntax: 'date:range', desc: 'Date range shortcuts', example: 'Created:近7天 → 2026-06-20~2026-06-26' },
+      { syntax: 'date:picker', desc: 'Date range picker', example: '→ 📅 日期范围选择器' },
     ],
     installNum: '03 · Install',
     installTitle: 'Quick Start',
@@ -87,6 +89,8 @@ const i18n = {
       { syntax: '笔误', desc: '自动纠错 (FEC)', example: 'Pasing → Passing' },
       { syntax: '"值"', desc: '跨字段建议', example: 'Passing → Status:Passing' },
       { syntax: '自由文本', desc: '全文搜索', example: 'kxccaqvx12' },
+      { syntax: '日期:range', desc: '日期快捷范围', example: 'Created:近7天 → 2026-06-20~2026-06-26' },
+      { syntax: '日期:picker', desc: '日期选择器', example: '→ 📅 日期范围选择器' },
     ],
     installNum: '03 · 安装',
     installTitle: '快速开始',
@@ -123,6 +127,8 @@ const chipConfigs: ChipConfig[] = [
   { type: 'numberRange', label: 'Orders', aliases: ['orders'], min: 0 },
   { type: 'select', label: 'User', prefix: '@', options: [{ value: 'robin', label: 'Robin' },{ value: 'alice', label: 'Alice' },{ value: 'bob', label: 'Bob' }] },
   { type: 'multiSelect', label: 'Tags', prefix: '#', options: [{ value: 'urgent', label: 'urgent' },{ value: 'bug', label: 'bug' },{ value: 'feature', label: 'feature' }] },
+  { type: 'dateRange', label: 'Created' },
+  { type: 'dateRange', label: 'Updated' },
 ];
 
 const tabs: TabOption[] = [
