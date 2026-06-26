@@ -176,6 +176,7 @@ export interface DropdownVM {
   suggestions: SuggestionVM[];
   history: HistoryVM[];
   footer?: string;
+  hint: string;
   isOpen: boolean;
   isLoading: boolean;
   offsetX: number;
@@ -187,7 +188,20 @@ export interface FilterChipBarVM {
   presets: PresetVM[];
   statusTabs: StatusTabVM[];
   activeFilterCount: number;
-  pendingHint: string | null;
+  pendingHint: { text: string } | null;
   isPresetOpen: boolean;
   setPresetOpen: (open: boolean) => void;
+  // Direct access for Antd4 compat (will be removed once fully migrated)
+  setDropdownOpen: (open: boolean) => void;
+  setActiveSuggestionIdx: (idx: number) => void;
+  commitSearch: () => void;
+  handleClear: () => void;
+  setSearchText: (text: string) => void;
+  tab: string | number;
+  setTab: (t: string | number) => void;
+  presetName: string;
+  setPresetName: (n: string) => void;
+  handleSavePreset: () => void;
+  dismissHint: () => void;
+  isCurrentSearchPreset: boolean;
 }

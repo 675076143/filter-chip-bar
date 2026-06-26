@@ -913,6 +913,12 @@ function buildSuggestions(
 export function useFilterChipBarVM(opts: UseFilterChipBarOptions & { placeholder?: string }): Omit<FilterChipBarVM, 'statusTabs'> {
   const fcb = useFilterChipBar(opts);
 
+  useEffect(() => {
+    if (fcb.isPresetOpen && fcb.searchText && !fcb.presetName) {
+      fcb.setPresetName(fcb.searchText.slice(0, 40));
+    }
+  }, [fcb.isPresetOpen]);
+
   const suggestions: SuggestionVM[] = useMemo(() => {
     return fcb.suggestions.map((s, idx) => ({
       key: s.isDivider ? `divider-${idx}` : s.isHeader ? `header-${s.label}` : s.value,
@@ -973,24 +979,56 @@ export function useFilterChipBarVM(opts: UseFilterChipBarOptions & { placeholder
     onScroll: fcb.onInputScroll,
   }), [fcb, opts.placeholder, opts.chipConfigs]);
 
-  const dropdown: DropdownVM = useMemo(() => ({
-    suggestions,
-    history,
-    footer: fcb.parsedToken.phase === 'filterValue' ? (
-      fcb.parsedToken.filterConfig?.type === 'multiSelect' ? '按逗号可多选' : '按空格继续添加'
-    ) : undefined,
-    isOpen: fcb.isDropdownOpen,
-    isLoading: fcb.isLoadingDynamic,
-    offsetX: fcb.dropdownOffsetX,
-  }), [suggestions, history, fcb.isDropdownOpen, fcb.isLoadingDynamic, fcb.dropdownOffsetX, fcb.parsedToken]);
+  const dropdown: DropdownVM = useMemo(() => {
+    const phase = fcb.parsedToken.phase;
+    const cfg = fcb.parsedToken.filterConfig;
+    let hint = '按回车直接搜索';
+    if (phase === 'filterValue' && cfg?.type === 'multiSelect') {
+      hint = '按逗号可多选';
+    } else if (phase === 'freeText' && cfg) {
+      hint = cfg.type === 'numberRange'
+        ? '直接输入数值，如: 100 或 100~200'
+        : cfg.type === 'dateRange'
+          ? '格式: 2024-01-01~2024-12-31'
+          : '直接输入文本，按空格结束';
+    }
+    return {
+      suggestions,
+      history,
+      footer: phase === 'filterValue' ? (
+        cfg?.type === 'multiSelect' ? '按逗号可多选' : '按空格继续添加'
+      ) : undefined,
+      hint,
+      isOpen: fcb.isDropdownOpen,
+      isLoading: fcb.isLoadingDynamic,
+      offsetX: fcb.dropdownOffsetX,
+    };
+  }, [suggestions, history, fcb.isDropdownOpen, fcb.isLoadingDynamic, fcb.dropdownOffsetX, fcb.parsedToken]);
+
+  const isCurrentSearchPreset = useMemo(
+    () => !!fcb.searchText && fcb.presets.some(p => p.searchText === fcb.searchText),
+    [fcb.searchText, fcb.presets],
+  );
 
   return {
     input,
     dropdown,
     presets,
     activeFilterCount: fcb.activeFilterCount,
-    pendingHint: fcb.pendingHint?.text ?? null,
+    pendingHint: fcb.pendingHint ?? null,
     isPresetOpen: fcb.isPresetOpen,
     setPresetOpen: fcb.setPresetOpen,
+    setDropdownOpen: fcb.setDropdownOpen,
+    setActiveSuggestionIdx: fcb.setActiveSuggestionIdx,
+    commitSearch: fcb.commitSearch,
+    handleClear: fcb.handleClear,
+    setSearchText: fcb.setSearchText,
+    tab: fcb.tab,
+    setTab: fcb.setTab,
+    presetName: fcb.presetName,
+    setPresetName: fcb.setPresetName,
+    handleSavePreset: fcb.handleSavePreset,
+    dismissHint: fcb.dismissHint,
+    isCurrentSearchPreset,
   };
 }
