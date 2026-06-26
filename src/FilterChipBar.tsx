@@ -19,6 +19,7 @@ import {
 } from './types';
 import { truncate } from './tokenize';
 import { useFilterChipBar, autoPlaceholder } from './hook';
+import FilterChipBarPanel from './FilterChipBarPanel';
 import { Popover, PopoverTrigger, PopoverContent, PopoverAnchor } from './ui/popover';
 import { cn } from './lib/utils';
 import { CalendarRangePanel } from './CalendarRangePanel';
@@ -151,180 +152,58 @@ export default function FilterChipBar({
   };
 
   const dropdownContent: ReactNode = (
-    <div
-      className="flex"
-      style={{ maxHeight: 320, minHeight: 0 }}
-      onMouseDown={(e) => e.preventDefault()}
-    >
-      <div className="w-[170px] max-h-80 overflow-y-auto py-0.5" role="listbox" id="fcb-listbox">
-        {fcb.suggestions.length === 0 ? (
-          fcb.isLoadingDynamic ? (
-            <div className="p-2 space-y-1.5">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="flex items-center gap-2 px-3 py-1.5">
-                  <div className="size-3 rounded-full bg-muted animate-pulse shrink-0" />
-                  <div className="h-3 flex-1 rounded bg-muted animate-pulse" style={{ animationDelay: `${i * 100}ms` }} />
-                  <div className="h-3 w-8 rounded bg-muted animate-pulse shrink-0" style={{ animationDelay: `${i * 100}ms` }} />
-                </div>
-              ))}
-              <div className="flex items-center justify-center gap-1.5 pt-1 text-[11px] text-muted-foreground/60">
-                <Loader2 className="size-3 animate-spin" />
-                Loading options...
-              </div>
-            </div>
-          ) : (
-            <div className="p-3 text-center">
-              <span className="text-xs text-muted-foreground/80">
-                {fcb.parsedToken.phase === 'filterName'
-                  ? 'Space → next filter'
-                  : fcb.parsedToken.phase === 'filterValue' && fcb.parsedToken.filterConfig?.type === 'multiSelect'
-                    ? 'Comma → multi-select'
-                    : fcb.parsedToken.phase === 'freeText' && fcb.parsedToken.filterConfig
-                      ? fcb.parsedToken.filterConfig.type === 'numberRange'
-                        ? 'Enter a number, e.g. 100 or 100~200'
-                        : fcb.parsedToken.filterConfig.type === 'dateRange'
-                          ? 'Format: 2024-01-01~2024-12-31'
-                          : 'Type text and press space to confirm'
-                      : ' ↵回车搜索'}
-              </span>
-            </div>
-          )
-        ) : (
-          fcb.suggestions.map((s, idx) => {
-            if (s.isDivider) {
-              return (
-                <div
-                  key={idx}
-                  className="h-px bg-border my-0.5 mx-3"
-                />
-              );
-            }
-            if (s.isHeader) {
-              return (
-                <div
-                  key={idx}
-                  className="px-3 pt-1 pb-0.5 text-[11px] text-muted-foreground/60 font-semibold"
-                >
-                  {s.label}
-                </div>
-              );
-            }
-            const isToggle = s.action === 'toggleNegate';
-            const isCommand = s.action === 'command' && !!s.command;
-            const isNeg = !!fcb.parsedToken.negated;
-            return (
-              <div
-                key={idx}
-                id={`fcb-option-${idx}`}
-                role="option"
-                aria-selected={idx === fcb.activeSuggestionIdx}
-                ref={(el) => {
-                  fcb.itemRefs.current[idx] = el;
-                }}
-                onMouseDown={(ev) => {
-                  ev.preventDefault();
-                  if (s.action === 'datePicker') {
-                    setDatePickerState({ prefix: s.value });
-                    return;
-                  }
-                  if (isCommand && s.command) fcb.executeCommand(s.command);
-                  else if (isToggle) fcb.handleToggleNegate();
-                  else fcb.handleSuggestionClick(s.value);
-                }}
-                onMouseEnter={() => fcb.setActiveSuggestionIdx(idx)}
-                className={cn(
-                  'px-3 py-1 cursor-pointer text-xs flex justify-between items-center gap-0.5 transition-colors',
-                  isToggle
-                    ? isNeg
-                      ? 'text-green-600 font-medium'
-                      : 'text-destructive font-medium'
-                    : isCommand
-                      ? 'text-primary font-medium'
-                      : 'text-foreground font-normal',
-                  idx === fcb.activeSuggestionIdx && 'bg-accent',
-                )}
-              >
-                {isToggle && (
-                  <span className="shrink-0">{isNeg ? '✓' : '⊘'}</span>
-                )}
-                {isCommand && (
-                  <span className="shrink-0 text-muted-foreground/60">→</span>
-                )}
-                <span className="overflow-hidden text-ellipsis whitespace-nowrap flex-1">
-                  {isToggle
-                    ? isNeg
-                      ? 'Remove exclusion'
-                      : 'Exclude'
-                    : isCommand
-                      ? s.label
-                      : renderSuggestionLabel(s.label, fcb.parsedToken.prefix)}
-                </span>
-                {s.hint && (
-                  <span className="text-muted-foreground/60 text-[11px] shrink-0">
-                    {s.hint}
-                  </span>
-                )}
-              </div>
-            );
-          })
-        )}
-        {fcb.isLoadingDynamic && fcb.suggestions.length > 0 && (
-          <div className="flex items-center justify-center gap-1.5 py-2 text-[11px] text-muted-foreground/60">
-            <Loader2 className="size-3 animate-spin" />
-            Loading more options...
-          </div>
-        )}
-      </div>
-      {fcb.filteredHistory.length > 0 && (
-        <div className="flex-1 overflow-hidden py-0.5 border-l border-border">
-          {!fcb.searchText && (
-            <div className="px-3 pt-1 pb-0.5 text-[11px] text-muted-foreground/60 font-semibold">
-              搜索历史
-            </div>
-          )}
-          {fcb.filteredHistory.slice(0, 8).map((h, hi) => (
-            <div
-              key={hi}
-              onMouseDown={(ev) => {
-                ev.preventDefault();
-                fcb.setSearchText(h.text);
-                fcb.setDropdownOpen(false);
-              }}
-              className="group px-3 py-1 cursor-pointer text-xs text-foreground flex items-center gap-0.5 hover:bg-accent transition-colors"
-            >
-              <Clock className="size-[11px] text-muted-foreground/60 shrink-0" />
-              <span className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
-                {h.text}
-              </span>
-              <span className="text-[10px] text-muted-foreground/60 shrink-0 tabular-nums group-hover:hidden">
-                {h.total}
-              </span>
-              <button
-                onMouseDown={(ev) => {
-                  ev.preventDefault();
-                  ev.stopPropagation();
-                  fcb.removeRecent(h.text);
-                }}
-                className="hidden group-hover:flex items-center justify-center size-3.5 shrink-0 text-muted-foreground hover:text-destructive transition-colors"
-              >
-                <X className="size-3" />
-              </button>
-            </div>
-          ))}
-          {!fcb.searchText && (
-            <div
-              onMouseDown={(ev) => {
-                ev.preventDefault();
-                fcb.clearRecent();
-              }}
-              className="px-3 py-1 cursor-pointer text-xs text-muted-foreground hover:bg-accent transition-colors"
-            >
-              🗑 清除历史
-            </div>
-          )}
-        </div>
-      )}
-    </div>
+    <FilterChipBarPanel
+      vm={{
+        dropdown: {
+          suggestions: fcb.suggestions.map((s, idx) => ({
+            key: s.isDivider ? `div-${idx}` : s.isHeader ? `hdr-${s.label}` : s.value,
+            label: s.label,
+            hint: s.hint,
+            active: idx === fcb.activeSuggestionIdx,
+            type: (s.action === 'datePicker' ? 'datepicker' : s.isDivider ? 'divider' : s.isHeader ? 'header' : 'item') as any,
+            onSelect: () => {
+              if (s.action === 'command' && s.command) fcb.executeCommand(s.command);
+              else if (s.action === 'toggleNegate') fcb.handleToggleNegate();
+              else if (s.action === 'recent') { fcb.setSearchText(s.value); fcb.setDropdownOpen(false); }
+              else fcb.handleSuggestionClick(s.value);
+            },
+          })),
+          history: fcb.filteredHistory.slice(0, 8).map(h => ({
+            key: String(h.timestamp),
+            text: h.text,
+            count: h.total,
+            onSelect: () => { fcb.setSearchText(h.text); fcb.setDropdownOpen(false); },
+            onRemove: () => fcb.removeRecent(h.text),
+          })),
+          footer: fcb.parsedToken.phase === 'filterValue' ? (
+            fcb.parsedToken.filterConfig?.type === 'multiSelect' ? 'Space → next  Comma → multi' : 'Space → next condition'
+          ) : undefined,
+          hint: '',
+          isOpen: fcb.isDropdownOpen,
+          isLoading: fcb.isLoadingDynamic,
+          offsetX: fcb.dropdownOffsetX,
+        },
+        input: {} as any,
+        presets: [],
+        activeFilterCount: fcb.activeFilterCount,
+        pendingHint: null,
+        isPresetOpen: false,
+        setPresetOpen: () => {},
+        setDropdownOpen: fcb.setDropdownOpen,
+        setActiveSuggestionIdx: fcb.setActiveSuggestionIdx,
+        commitSearch: () => {},
+        handleClear: fcb.handleClear,
+        setSearchText: fcb.setSearchText,
+        tab: -1,
+        setTab: () => {},
+        presetName: '',
+        setPresetName: () => {},
+        handleSavePreset: () => {},
+        dismissHint: () => {},
+        isCurrentSearchPreset: false,
+      }}
+      onDatePicker={(prefix: string) => setDatePickerState({ prefix })}
+    />
   );
 
   const presetContent: ReactNode = (
