@@ -24,6 +24,22 @@ import { cn } from './lib/utils';
 
 const DEFAULT_PLACEHOLDER = 'Search or type filters...';
 
+function autoPlaceholder(configs: ChipConfig[]): string {
+  const parts: string[] = [];
+  for (const cfg of configs.slice(0, 4)) {
+    if (cfg.prefix) {
+      const first = Array.isArray(cfg.options) ? cfg.options[0] : null;
+      parts.push(first ? `${cfg.prefix}${first.label}` : `${cfg.prefix}...`);
+    } else if (cfg.type === 'select' || cfg.type === 'multiSelect') {
+      const first = Array.isArray(cfg.options) ? cfg.options[0] : null;
+      parts.push(first ? `${cfg.label}:${first.label}` : `${cfg.label}:...`);
+    } else {
+      parts.push(`${cfg.label}:...`);
+    }
+  }
+  return parts.length > 0 ? `Search or try: ${parts.join(', ')}` : DEFAULT_PLACEHOLDER;
+}
+
 const DEFAULT_SYNTAX_HELP: ReactNode = (
   <div className="text-xs leading-relaxed max-w-[280px] space-y-0.5">
     <div><b>key:value</b> — Filter by field</div>
@@ -51,6 +67,7 @@ export interface FilterChipBarProps {
   footerExtra?: ReactNode;
   searchResultCount?: number;
   searchLoading?: boolean;
+  locale?: 'en' | 'zh';
 }
 
 export default function FilterChipBar({
@@ -62,7 +79,7 @@ export default function FilterChipBar({
   initialSearchText = '',
   initialTab = -1,
   commands,
-  placeholder = DEFAULT_PLACEHOLDER,
+  placeholder,
   syntaxHelp = DEFAULT_SYNTAX_HELP,
   onImageSearch,
   footerExtra,
@@ -80,6 +97,7 @@ export default function FilterChipBar({
     onFiltersChange,
     searchResultCount,
     searchLoading,
+    locale,
   });
 
   const isCurrentSearchPreset = useMemo(

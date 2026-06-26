@@ -117,7 +117,7 @@ export function loadRecent(namespace: string): RecentSearch[] {
 
 export function saveRecent(namespace: string, searches: RecentSearch[]): void {
   try {
-    localStorage.setItem(recentStorageKey(namespace), JSON.stringify(searches.slice(0, 10)));
+    localStorage.setItem(recentStorageKey(namespace), JSON.stringify(searches.slice(0, 8)));
   } catch {
     // quota exceeded or privacy mode — silently ignore
   }

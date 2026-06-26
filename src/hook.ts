@@ -48,7 +48,7 @@ export function autoPlaceholder(configs: ChipConfig[]): string {
       parts.push(`${cfg.label}:...`);
     }
   }
-  return parts.length > 0 ? `例: ${parts.join(', ')}` : '输入关键词或筛选条件';
+  return parts.length > 0 ? `输入关键词或筛选条件,例: ${parts.join(', ')}` : '输入关键词或筛选条件';
 }
 
 const ICON_OFFSET = 14 + 8 + 12;
@@ -473,6 +473,9 @@ export function useFilterChipBar({
       }
       setSearchText(newValue);
       setDropdownOpen(true);
+      if (!newValue.trim() && searchText.trim()) {
+        applyFilters('', tab);
+      }
     },
     [searchText, chipConfigs, tab, applyFilters],
   );
@@ -534,8 +537,9 @@ export function useFilterChipBar({
           handleSuggestionClick(s.value);
         }
       } else if (e.key === 'Backspace') {
-        const cursorPos = e.currentTarget.selectionStart;
-        if (cursorPos === 0 && searchText.length > 0) {
+        const input = e.currentTarget;
+        const cursorPos = input.selectionStart;
+        if (cursorPos === 0 && input.selectionStart === input.selectionEnd && searchText.length > 0) {
           e.preventDefault();
           const trimmed = searchText.replace(/\s+$/, '');
           const prevSpace = trimmed.lastIndexOf(' ');

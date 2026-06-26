@@ -23,3 +23,12 @@ export {
   type UseFilterChipBarOptions,
   type UseFilterChipBarReturn,
 } from './hook';
+export {
+  DEFAULT_HINTS,
+  buildHints,
+  getPendingHint,
+  getUsageCount,
+  incrementUsage,
+  markHintSeen,
+  type ProgressiveHint,
+} from './progressive';

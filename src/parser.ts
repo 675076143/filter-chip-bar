@@ -103,12 +103,32 @@ export function parseQuery(
         chips[chipKey] = { operation: end !== undefined ? 'range' : op, value: val, end };
       }
     } else if (config.type === 'dateRange') {
-      const parts = cleanRawValue.split('~');
-      if (parts.length === 2) {
-        const ds = dayjs(parts[0].trim());
-        const de = dayjs(parts[1].trim());
-        if (ds.isValid() && de.isValid()) {
-          chips[chipKey] = [ds.format('YYYY-MM-DD'), de.format('YYYY-MM-DD')];
+      const raw = cleanRawValue.trim();
+      const today = dayjs();
+      const SEMANTIC_DATES: Record<string, [dayjs.Dayjs, dayjs.Dayjs]> = {
+        今天: [today, today],
+        昨天: [today.subtract(1, 'day'), today.subtract(1, 'day')],
+        近7天: [today.subtract(6, 'day'), today],
+        近15天: [today.subtract(14, 'day'), today],
+        近30天: [today.subtract(29, 'day'), today],
+        近90天: [today.subtract(89, 'day'), today],
+      };
+      if (SEMANTIC_DATES[raw]) {
+        const [ds, de] = SEMANTIC_DATES[raw];
+        chips[chipKey] = [ds.format('YYYY-MM-DD'), de.format('YYYY-MM-DD')];
+      } else {
+        const parts = raw.split('~');
+        if (parts.length === 2) {
+          const ds = dayjs(parts[0].trim());
+          const de = parts[1].trim() === '此刻' ? dayjs() : dayjs(parts[1].trim());
+          if (ds.isValid() && de.isValid()) {
+            chips[chipKey] = [ds.format('YYYY-MM-DD'), de.format('YYYY-MM-DD')];
+          }
+        } else if (parts.length === 1) {
+          const d = dayjs(parts[0].trim());
+          if (d.isValid()) {
+            chips[chipKey] = [d.format('YYYY-MM-DD'), d.format('YYYY-MM-DD')];
+          }
         }
       }
     }
