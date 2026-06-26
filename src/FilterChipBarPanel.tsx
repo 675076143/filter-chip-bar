@@ -1,4 +1,4 @@
-import { type FilterChipBarVM } from 'filter-chip-bar/headless';
+import { type FilterChipBarVM } from './types';
 
 const C = {
   colorText: 'rgba(0,0,0,0.85)',
@@ -45,93 +45,55 @@ export default function FilterChipBarPanel({ vm, onDatePicker }: Props) {
         flexDirection: 'column',
       }}
     >
-      <div style={{ flex: 1, overflowY: 'auto', padding: '4px 0' }}>
-        {dropdown.suggestions.length === 0 ? (
-          <div style={{ padding: 12, fontSize: 13, color: C.colorTextSecondary }}>
-            {dropdown.isLoading ? '加载中...' : dropdown.hint}
-          </div>
-        ) : (
-          dropdown.suggestions.map((s) => {
-            if (s.type === 'divider') {
+      <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
+        <div style={{ flex: 1, overflowY: 'auto', padding: '4px 0' }}>
+          {dropdown.suggestions.length === 0 ? (
+            <div style={{ padding: 12, fontSize: 13, color: C.colorTextSecondary }}>
+              {dropdown.isLoading ? '加载中...' : dropdown.hint}
+            </div>
+          ) : (
+            dropdown.suggestions.map((s) => {
+              if (s.type === 'divider') {
+                return (
+                  <div
+                    key={s.key}
+                    style={{ height: 1, background: C.colorBorderSecondary, margin: '4px 12px' }}
+                  />
+                );
+              }
+              if (s.type === 'header') {
+                return (
+                  <div
+                    key={s.key}
+                    style={{ padding: '6px 12px 2px', fontSize: 11, color: C.colorTextQuaternary, fontWeight: 600 }}>
+                    {s.label}
+                  </div>
+                );
+              }
               return (
                 <div
                   key={s.key}
-                  style={{ height: 1, background: C.colorBorderSecondary, margin: '4px 12px' }}
-                />
-              );
-            }
-            if (s.type === 'header') {
-              return (
-                <div
-                  key={s.key}
-                  style={{
-                    padding: '6px 12px 2px',
-                    fontSize: 11,
-                    color: C.colorTextQuaternary,
-                    fontWeight: 600,
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    if (s.type === 'datepicker') onDatePicker?.(s.key);
+                    else s.onSelect();
                   }}
-                >
-                  {s.label}
+                  style={{ ...row, justifyContent: 'space-between', cursor: 'pointer', color: C.colorText, background: s.active ? '#e6f7ff' : 'transparent' }}>
+                  <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.label}</span>
+                  {s.hint && <span style={{ fontSize: 11, color: C.colorTextQuaternary, flexShrink: 0 }}>{s.hint}</span>}
                 </div>
               );
-            }
-            return (
-              <div
-                key={s.key}
-                onMouseDown={(e) => {
-                  e.preventDefault();
-                  if (s.type === 'datepicker') onDatePicker?.(s.key);
-                  else s.onSelect();
-                }}
-                style={{
-                  ...row,
-                  justifyContent: 'space-between',
-                  cursor: 'pointer',
-                  color: C.colorText,
-                  background: s.active ? '#e6f7ff' : 'transparent',
-                }}
-              >
-                <span
-                  style={{
-                    flex: 1,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {s.label}
-                </span>
-                {s.hint && (
-                  <span style={{ fontSize: 11, color: C.colorTextQuaternary, flexShrink: 0 }}>
-                    {s.hint}
-                  </span>
-                )}
-              </div>
-            );
-          })
-        )}
-        {dropdown.footer && (
-          <div
-            style={{
-              padding: '6px 12px',
-              fontSize: 12,
-              color: C.colorTextSecondary,
-              fontWeight: 500,
-              borderTop: `1px solid ${C.colorBorderSecondary}`,
-              margin: '4px 12px 0',
-            }}
-          >
-            {dropdown.footer}
-          </div>
-        )}
+            })
+          )}
+          {dropdown.footer && (
+            <div style={{ padding: '6px 12px', fontSize: 12, color: C.colorTextSecondary, fontWeight: 500, borderTop: `1px solid ${C.colorBorderSecondary}`, margin: '4px 12px 0' }}>
+              {dropdown.footer}
+            </div>
+          )}
+        </div>
 
-        <div style={{ height: 1, background: C.colorBorderSecondary, margin: '8px 12px' }} />
-        <div
-          style={{ padding: '4px 12px', fontSize: 11, color: C.colorTextQuaternary, lineHeight: 2 }}
-        >
-          {tips.map((t, i) => (
-            <div key={i}>{t}</div>
-          ))}
+        <div style={{ width: 140, borderLeft: `1px solid ${C.colorBorderSecondary}`, padding: '8px 10px', fontSize: 11, color: C.colorTextQuaternary, lineHeight: 2, flexShrink: 0, overflow: 'hidden' }}>
+          {tips.map((t, i) => <div key={i}>{t}</div>)}
         </div>
       </div>
 
