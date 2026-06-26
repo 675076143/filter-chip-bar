@@ -872,7 +872,13 @@ function buildSuggestions(
             value: `${labelPrefix}${label}`,
             label,
             hint: label,
-          })),
+          }          )),
+          {
+            value: labelPrefix,
+            label: '日期范围选择器',
+            action: 'datePicker' as const,
+            hint: '📅',
+          },
           { value: '', label: '', isDivider: true },
           { value: `${labelPrefix}`, label: '自由', hint: '2024-01-01~2024-12-31' },
         ];

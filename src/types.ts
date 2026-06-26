@@ -52,7 +52,7 @@ export interface SuggestionItem {
   value: string;
   label: string;
   hint?: string;
-  action?: 'toggleNegate' | 'recent' | 'clearHistory' | 'imageSearch' | 'command';
+  action?: 'toggleNegate' | 'recent' | 'clearHistory' | 'imageSearch' | 'command' | 'datePicker';
   isDivider?: boolean;
   isHeader?: boolean;
   command?: ActionCommand;
