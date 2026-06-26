@@ -40,4 +40,5 @@ export {
   markHintSeen,
   type ProgressiveHint,
 } from './progressive';
+export { default as FilterChipBarPanel } from './FilterChipBarPanel';
 export { CalendarRangePanel } from './CalendarRangePanel';
