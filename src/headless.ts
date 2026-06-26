@@ -19,6 +19,7 @@ export { parseCurrentToken, parseQuery, type ParsedToken } from './parser';
 export { tokenizeSearchText, truncate } from './tokenize';
 export {
   useFilterChipBar,
+  autoPlaceholder,
   type UseFilterChipBarOptions,
   type UseFilterChipBarReturn,
 } from './hook';

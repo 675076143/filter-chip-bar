@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useState, useEffect, useMemo, type ReactNode } from 'react';
 import {
   Search,
   X,
@@ -18,27 +18,11 @@ import {
   type ActionCommand,
 } from './types';
 import { truncate } from './tokenize';
-import { useFilterChipBar } from './hook';
+import { useFilterChipBar, autoPlaceholder } from './hook';
 import { Popover, PopoverTrigger, PopoverContent, PopoverAnchor } from './ui/popover';
 import { cn } from './lib/utils';
 
 const DEFAULT_PLACEHOLDER = 'Search or type filters...';
-
-function autoPlaceholder(configs: ChipConfig[]): string {
-  const parts: string[] = [];
-  for (const cfg of configs.slice(0, 4)) {
-    if (cfg.prefix) {
-      const first = Array.isArray(cfg.options) ? cfg.options[0] : null;
-      parts.push(first ? `${cfg.prefix}${first.label}` : `${cfg.prefix}...`);
-    } else if (cfg.type === 'select' || cfg.type === 'multiSelect') {
-      const first = Array.isArray(cfg.options) ? cfg.options[0] : null;
-      parts.push(first ? `${cfg.label}:${first.label}` : `${cfg.label}:...`);
-    } else {
-      parts.push(`${cfg.label}:...`);
-    }
-  }
-  return parts.length > 0 ? `Search or try: ${parts.join(', ')}` : DEFAULT_PLACEHOLDER;
-}
 
 const DEFAULT_SYNTAX_HELP: ReactNode = (
   <div className="text-xs leading-relaxed max-w-[280px] space-y-0.5">
@@ -67,7 +51,6 @@ export interface FilterChipBarProps {
   footerExtra?: ReactNode;
   searchResultCount?: number;
   searchLoading?: boolean;
-  locale?: 'en' | 'zh';
 }
 
 export default function FilterChipBar({
@@ -79,7 +62,7 @@ export default function FilterChipBar({
   initialSearchText = '',
   initialTab = -1,
   commands,
-  placeholder,
+  placeholder = DEFAULT_PLACEHOLDER,
   syntaxHelp = DEFAULT_SYNTAX_HELP,
   onImageSearch,
   footerExtra,
@@ -97,8 +80,18 @@ export default function FilterChipBar({
     onFiltersChange,
     searchResultCount,
     searchLoading,
-    locale,
   });
+
+  const isCurrentSearchPreset = useMemo(
+    () => fcb.searchText && fcb.presets.some(p => p.searchText === fcb.searchText),
+    [fcb.searchText, fcb.presets],
+  );
+
+  useEffect(() => {
+    if (fcb.isPresetOpen && fcb.searchText && !fcb.presetName) {
+      fcb.setPresetName(fcb.searchText.slice(0, 40));
+    }
+  }, [fcb.isPresetOpen]);
 
   const [copiedPresetId, setCopiedPresetId] = useState<string | null>(null);
 
@@ -159,45 +152,7 @@ export default function FilterChipBar({
       style={{ maxHeight: 320, minHeight: 0 }}
       onMouseDown={(e) => e.preventDefault()}
     >
-      {fcb.filteredHistory.length > 0 && (
-        <div className="w-[200px] max-h-80 overflow-y-auto border-r border-border py-0.5 shrink-0">
-          {!fcb.searchText && (
-            <div className="px-3 pt-1 pb-0.5 text-[11px] text-muted-foreground/60 font-semibold">
-              Recent
-            </div>
-          )}
-          {fcb.filteredHistory.map((h, hi) => (
-            <div
-              key={hi}
-              onMouseDown={(ev) => {
-                ev.preventDefault();
-                fcb.setSearchText(h.text);
-                fcb.setDropdownOpen(false);
-              }}
-              className="group px-3 py-1 cursor-pointer text-xs text-foreground flex items-center gap-0.5 hover:bg-accent transition-colors"
-            >
-              <Clock className="size-[11px] text-muted-foreground/60 shrink-0" />
-              <span className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
-                {h.text.length > 20 ? h.text.slice(0, 17) + '...' : h.text}
-              </span>
-              <span className="text-[10px] text-muted-foreground/60 shrink-0 tabular-nums group-hover:hidden">
-                {h.total}
-              </span>
-              <button
-                onMouseDown={(ev) => {
-                  ev.preventDefault();
-                  ev.stopPropagation();
-                  fcb.removeRecent(h.text);
-                }}
-                className="hidden group-hover:flex items-center justify-center size-3.5 shrink-0 text-muted-foreground hover:text-destructive transition-colors"
-              >
-                <X className="size-3" />
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
-      <div className="flex-1 max-h-80 overflow-y-auto py-0.5" role="listbox" id="fcb-listbox">
+      <div className="w-[170px] max-h-80 overflow-y-auto py-0.5" role="listbox" id="fcb-listbox">
         {fcb.suggestions.length === 0 ? (
           fcb.isLoadingDynamic ? (
             <div className="p-2 space-y-1.5">
@@ -216,13 +171,17 @@ export default function FilterChipBar({
           ) : (
             <div className="p-3 text-center">
               <span className="text-xs text-muted-foreground/80">
-                {fcb.parsedToken.phase === 'freeText' && fcb.parsedToken.filterConfig
-                  ? fcb.parsedToken.filterConfig.type === 'numberRange'
-                    ? 'Enter a number, e.g. 100 or 100~200'
-                    : fcb.parsedToken.filterConfig.type === 'dateRange'
-                      ? 'Format: 2024-01-01~2024-12-31'
-                      : 'Type text and press space to confirm'
-                  : 'No matching filters'}
+                {fcb.parsedToken.phase === 'filterName'
+                  ? 'Space → next filter'
+                  : fcb.parsedToken.phase === 'filterValue' && fcb.parsedToken.filterConfig?.type === 'multiSelect'
+                    ? 'Comma → multi-select'
+                    : fcb.parsedToken.phase === 'freeText' && fcb.parsedToken.filterConfig
+                      ? fcb.parsedToken.filterConfig.type === 'numberRange'
+                        ? 'Enter a number, e.g. 100 or 100~200'
+                        : fcb.parsedToken.filterConfig.type === 'dateRange'
+                          ? 'Format: 2024-01-01~2024-12-31'
+                          : 'Type text and press space to confirm'
+                      : ' ↵回车搜索'}
               </span>
             </div>
           )
@@ -308,6 +267,55 @@ export default function FilterChipBar({
           </div>
         )}
       </div>
+      {fcb.filteredHistory.length > 0 && (
+        <div className="flex-1 overflow-hidden py-0.5 border-l border-border">
+          {!fcb.searchText && (
+            <div className="px-3 pt-1 pb-0.5 text-[11px] text-muted-foreground/60 font-semibold">
+              搜索历史
+            </div>
+          )}
+          {fcb.filteredHistory.slice(0, 8).map((h, hi) => (
+            <div
+              key={hi}
+              onMouseDown={(ev) => {
+                ev.preventDefault();
+                fcb.setSearchText(h.text);
+                fcb.setDropdownOpen(false);
+              }}
+              className="group px-3 py-1 cursor-pointer text-xs text-foreground flex items-center gap-0.5 hover:bg-accent transition-colors"
+            >
+              <Clock className="size-[11px] text-muted-foreground/60 shrink-0" />
+              <span className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
+                {h.text}
+              </span>
+              <span className="text-[10px] text-muted-foreground/60 shrink-0 tabular-nums group-hover:hidden">
+                {h.total}
+              </span>
+              <button
+                onMouseDown={(ev) => {
+                  ev.preventDefault();
+                  ev.stopPropagation();
+                  fcb.removeRecent(h.text);
+                }}
+                className="hidden group-hover:flex items-center justify-center size-3.5 shrink-0 text-muted-foreground hover:text-destructive transition-colors"
+              >
+                <X className="size-3" />
+              </button>
+            </div>
+          ))}
+          {!fcb.searchText && (
+            <div
+              onMouseDown={(ev) => {
+                ev.preventDefault();
+                fcb.clearRecent();
+              }}
+              className="px-3 py-1 cursor-pointer text-xs text-muted-foreground hover:bg-accent transition-colors"
+            >
+              🗑 清除历史
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 
@@ -400,7 +408,7 @@ export default function FilterChipBar({
                   aria-hidden
                 >
                   <div
-                    style={{ transform: `translateX(${-fcb.inputScrollLeft}px)`, whiteSpace: 'pre' }}
+                    style={{ position: 'relative', left: -fcb.inputScrollLeft, whiteSpace: 'pre' }}
                     className="min-w-max"
                   >
                     {fcb.searchText ? (
@@ -464,13 +472,24 @@ export default function FilterChipBar({
           </span>
         )}
 
+        <button
+          type="button"
+          onMouseDown={(e: React.MouseEvent) => {
+            e.preventDefault();
+            fcb.commitSearch();
+          }}
+          className="inline-flex items-center justify-center h-7 px-3 text-xs font-medium text-primary-foreground bg-primary rounded shrink-0 cursor-pointer select-none border-none hover:opacity-85 transition-opacity"
+        >
+          搜索
+        </button>
+
         <Popover open={fcb.isPresetOpen} onOpenChange={fcb.setPresetOpen}>
           <PopoverTrigger asChild>
             <button
               className="inline-flex items-center justify-center rounded-md text-sm font-medium h-8 w-8 hover:bg-accent hover:text-accent-foreground transition-colors"
               title="Presets"
             >
-              <Star className="size-4" />
+              <Star className={cn('size-4', isCurrentSearchPreset && 'fill-amber-400 text-amber-400')} />
             </button>
           </PopoverTrigger>
           <PopoverContent align="end" className="p-0 w-[280px]">

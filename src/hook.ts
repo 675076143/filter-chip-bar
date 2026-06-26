@@ -16,7 +16,8 @@ import {
 } from './types';
 import { parseCurrentToken, parseQuery, type ParsedToken } from './parser';
 import { tokenizeSearchText } from './tokenize';
-import { findClosest } from './fuzzy';
+import { findClosest, levenshtein } from './fuzzy';
+import dayjs from 'dayjs';
 import {
   DEFAULT_HINTS,
   getPendingHint,
@@ -26,12 +27,28 @@ import {
 } from './progressive';
 
 const TYPE_HINTS: Record<string, string> = {
-  select: 'Select',
-  multiSelect: 'Multi',
-  input: 'Text',
-  dateRange: 'Date',
-  numberRange: 'Number',
+  select: '单选',
+  multiSelect: '多选',
+  input: '文本',
+  dateRange: '日期',
+  numberRange: '数值',
 };
+
+export function autoPlaceholder(configs: ChipConfig[]): string {
+  const parts: string[] = [];
+  for (const cfg of configs.slice(0, 4)) {
+    if (cfg.prefix) {
+      const first = Array.isArray(cfg.options) ? cfg.options[0] : null;
+      parts.push(first ? `${cfg.prefix}${first.label}` : `${cfg.prefix}...`);
+    } else if (cfg.type === 'select' || cfg.type === 'multiSelect') {
+      const first = Array.isArray(cfg.options) ? cfg.options[0] : null;
+      parts.push(first ? `${cfg.label}:${first.label}` : `${cfg.label}:...`);
+    } else {
+      parts.push(`${cfg.label}:...`);
+    }
+  }
+  return parts.length > 0 ? `Try: ${parts.join(', ')}` : 'Search or type filters...';
+}
 
 const ICON_OFFSET = 14 + 8 + 12;
 
@@ -42,11 +59,11 @@ export interface UseFilterChipBarOptions {
   initialSearchText?: string;
   initialTab?: string | number;
   onFiltersChange?: (result: FilterChipBarResult) => void;
+  onSearch?: () => void;
   fontInfo?: { fontSize: number; fontFamily: string };
   searchResultCount?: number;
   searchLoading?: boolean;
   hints?: ProgressiveHint[];
-  locale?: 'en' | 'zh';
 }
 
 export interface UseFilterChipBarReturn {
@@ -82,6 +99,7 @@ export interface UseFilterChipBarReturn {
   handleKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   handlePaste: (e: React.ClipboardEvent<HTMLInputElement>) => void;
   handleClear: () => void;
+  commitSearch: () => void;
   handleSuggestionClick: (value: string) => void;
   handleToggleNegate: () => void;
   executeCommand: (cmd: ActionCommand) => void;
@@ -105,11 +123,11 @@ export function useFilterChipBar({
   initialSearchText = '',
   initialTab = -1,
   onFiltersChange,
+  onSearch,
   fontInfo,
   searchResultCount,
   searchLoading,
   hints = DEFAULT_HINTS,
-  locale = 'en',
 }: UseFilterChipBarOptions): UseFilterChipBarReturn {
   const inputRef = useRef<HTMLInputElement>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -177,6 +195,8 @@ export function useFilterChipBar({
 
   const cbRef = useRef(onFiltersChange);
   cbRef.current = onFiltersChange;
+  const searchRef = useRef(onSearch);
+  searchRef.current = onSearch;
 
   const applyFilters = useCallback(
     (text: string, s: string | number) => {
@@ -185,6 +205,7 @@ export function useFilterChipBar({
         Object.entries(chips).filter(([, v]) => v !== undefined && v !== null && v !== ''),
       );
       cbRef.current?.({ searchText: text, chips: cleaned, freeText, tab: s });
+      searchRef.current?.();
       pendingSearchRef.current = text.trim() || null;
       const count = incrementUsage(storageNamespace);
       const hint = getPendingHint(storageNamespace, hints);
@@ -227,7 +248,7 @@ export function useFilterChipBar({
           timestamp: Date.now(),
           frequency: (existing?.frequency ?? 0) + 1,
         };
-        const next = [entry, ...prev.filter((e) => e.text !== text)].slice(0, 10);
+        const next = [entry, ...prev.filter((e) => e.text !== text)].slice(0, 8);
         saveRecent(storageNamespace, next);
         return next;
       });
@@ -254,10 +275,14 @@ export function useFilterChipBar({
   }, [activeIdx]);
 
   useLayoutEffect(() => {
-    if (inputRef.current) {
-      inputRef.current.scrollLeft = scrollPosRef.current;
-      setInputScrollLeft(inputRef.current.scrollLeft);
-    }
+    const input = inputRef.current;
+    if (!input) return;
+    // Read browser's natural scroll — never override it
+    setInputScrollLeft((prev) => {
+      const current = input.scrollLeft;
+      if (Math.abs(prev - current) < 0.5) return prev;
+      return current;
+    });
   });
 
   useEffect(() => {
@@ -295,7 +320,7 @@ export function useFilterChipBar({
   const textTokens = useMemo(() => tokenizeSearchText(searchText, chipConfigs, allOptions), [searchText, chipConfigs, allOptions]);
 
   const suggestions = useMemo(
-    () => buildSuggestions(searchText, chipConfigs, allOptions, parsedToken, lastSpaceIdx, commands, locale),
+    () => buildSuggestions(searchText, chipConfigs, allOptions, parsedToken, lastSpaceIdx, commands),
     [searchText, chipConfigs, allOptions, parsedToken, lastSpaceIdx, commands],
   );
 
@@ -363,7 +388,7 @@ export function useFilterChipBar({
         ? chipConfigs.find((f) => f.label === labelMatch[2])
         : undefined;
       const supportsMultiValue =
-        !isPartial && config?.type === 'multiSelect';
+        !isPartial && (config?.type === 'multiSelect' || config?.type === 'select');
       const suffix = isPartial ? '' : supportsMultiValue ? '' : ' ';
       const newText = before + value + suffix;
       setSearchText(newText);
@@ -491,26 +516,20 @@ export function useFilterChipBar({
       } else if (e.key === 'Escape') {
         setDropdownOpen(false);
         setActiveIdx(-1);
-      } else if (e.key === 'Tab') {
-        const real = suggestions.filter((s) => !s.isDivider && !s.isHeader);
-        const target = activeIdx >= 0 && activeIdx < suggestions.length
-          ? suggestions[activeIdx]
-          : real.length === 1
-            ? real[0]
-            : null;
-
-        if (!target || target.isDivider) return;
+      } else if (e.key === 'Tab' && activeIdx >= 0 && activeIdx < suggestions.length) {
+        const s = suggestions[activeIdx];
+        if (s.isDivider) return;
         e.preventDefault();
-        if (target.action === 'command' && target.command) {
-          executeCommand(target.command);
-        } else if (target.action === 'toggleNegate') {
+        if (s.action === 'command' && s.command) {
+          executeCommand(s.command);
+        } else if (s.action === 'toggleNegate') {
           handleToggleNegate();
-        } else if (target.action === 'recent') {
-          setSearchText(target.value);
+        } else if (s.action === 'recent') {
+          setSearchText(s.value);
           setDropdownOpen(false);
-          applyFilters(target.value, tab);
+          applyFilters(s.value, tab);
         } else {
-          handleSuggestionClick(target.value);
+          handleSuggestionClick(s.value);
         }
       } else if (e.key === 'Backspace') {
         const cursorPos = e.currentTarget.selectionStart;
@@ -538,9 +557,16 @@ export function useFilterChipBar({
 
   const handleClear = useCallback(() => {
     setSearchText('');
+    setDropdownOpen(true);
     applyFilters('', tab);
     inputRef.current?.focus();
   }, [tab, applyFilters]);
+
+  const commitSearch = useCallback(() => {
+    setDropdownOpen(false);
+    setActiveIdx(-1);
+    applyFilters(searchText, tab);
+  }, [searchText, tab, applyFilters]);
 
   const onInputScroll = useCallback((scrollLeft: number) => {
     scrollPosRef.current = scrollLeft;
@@ -587,6 +613,7 @@ export function useFilterChipBar({
     handleKeyDown,
     handlePaste,
     handleClear,
+    commitSearch,
   handleSuggestionClick,
   handleToggleNegate,
   executeCommand,
@@ -609,7 +636,6 @@ function buildSuggestions(
   parsedToken: ParsedToken,
   lastSpaceIdx: number,
   commands: ActionCommand[],
-  locale: 'en' | 'zh' = 'en',
 ): SuggestionItem[] {
   let suggestions: SuggestionItem[] = [];
 
@@ -680,32 +706,57 @@ function buildSuggestions(
       });
     suggestions = suggestions.concat(filterSuggestions);
 
-    // Cross-field value suggestions: match typed text against known option labels
-    // of select/multiSelect chip configs, allowing users to discover filters
-    // by typing option values (e.g. "Passing" → suggest "Status:Passing")
+    // 跨字段值匹配: 直接输入 "auto" → 找到 "操作人: auto-manager-bi" 等
     if (lower) {
-      const crossFieldSuggestions: SuggestionItem[] = [];
-      chipConfigs
-        .filter((f) => (f.type === 'select' || f.type === 'multiSelect') && !usedLabels.has(f.label))
-        .forEach((cfg) => {
-          const opts = resolvedOptions[cfg.label] ?? [];
-          if (!opts.length) return;
-          opts.forEach((opt) => {
-            if (opt.label.toLowerCase().includes(lower)) {
-              crossFieldSuggestions.push({
-                value: (neg ? '-' : '') + cfg.label + ':' + opt.label,
-                label: cfg.label + ':' + opt.label,
-                hint: cfg.label,
-              });
+      const valueMatches: SuggestionItem[] = [];
+      const fuzzyMatches: SuggestionItem[] = [];
+      for (const cfg of chipConfigs) {
+        if (usedLabels.has(cfg.label)) continue;
+        const opts = resolvedOptions[cfg.label] ?? [];
+        if (!Array.isArray(opts)) continue;
+        let hasExact = false;
+        for (const opt of opts) {
+          if (opt.label.toLowerCase().includes(lower)) {
+            hasExact = true;
+            valueMatches.push({
+              value: (neg ? '-' : '') + cfg.label + ':' + opt.label,
+              label: (neg ? '-' : '') + cfg.label + ': ' + opt.label,
+              hint: TYPE_HINTS[cfg.type] ?? cfg.type,
+            });
+          }
+        }
+        if (!hasExact) {
+          let best: { label: string; distance: number } | null = null;
+          for (const opt of opts) {
+            const prefix = opt.label.slice(0, lower.length + 2);
+            const dist = levenshtein(lower, prefix);
+            if (dist > 0 && dist <= 3 && (!best || dist < best.distance)) {
+              best = { label: opt.label, distance: dist };
             }
-          });
-        });
-
-      if (crossFieldSuggestions.length > 0) {
+          }
+          if (best) {
+            fuzzyMatches.push({
+              value: (neg ? '-' : '') + cfg.label + ':' + best.label,
+              label: (neg ? '-' : '') + cfg.label + ': ' + best.label,
+              hint: '',
+              didYouMean: best.label,
+            });
+          }
+        }
+      }
+      if (valueMatches.length > 0) {
         if (suggestions.length > 0) {
           suggestions.push({ value: '', label: '', isDivider: true });
         }
-        suggestions = suggestions.concat(crossFieldSuggestions.slice(0, 8));
+        suggestions.push({ value: '', label: '匹配结果', isHeader: true });
+        suggestions.push(...valueMatches);
+      }
+      if (fuzzyMatches.length > 0 && valueMatches.length === 0) {
+        if (suggestions.length > 0) {
+          suggestions.push({ value: '', label: '', isDivider: true });
+        }
+        suggestions.push({ value: '', label: '您是不是要找？', isHeader: true });
+        suggestions.push(...fuzzyMatches);
       }
     }
 
@@ -736,8 +787,8 @@ function buildSuggestions(
 
     suggestions.push({
       value: '',
-      label: isNeg ? 'Remove exclusion' : 'Exclude',
-      hint: isNeg ? 'Restore normal' : 'Negation mode',
+      label: isNeg ? '取消排除' : '排除',
+      hint: isNeg ? '恢复普通' : '排除模式',
       action: 'toggleNegate' as const,
     });
     suggestions.push({ value: '', label: '', isDivider: true });
@@ -779,31 +830,14 @@ function buildSuggestions(
         const closest = findClosest(parsedToken.prefix, opts.map((o) => o.label), 2);
         if (closest && !selectedLabels.includes(closest)) {
           const selPrefix = selectedLabels.length > 0 ? selectedLabels.join(',') + ',' : '';
-          suggestions.push({ value: '', label: '', isDivider: true });
-          suggestions.push({
-            value: `${neg}${valueFormat(`${selPrefix}${closest}`)}`,
-            label: closest,
-            hint: 'Did you mean?',
-            didYouMean: closest,
-          });
-        }
-      }
-    }
-
-    if (lower && suggestions.length > 1) {
-      const isMulti = cfg.type === 'multiSelect';
       suggestions.push({ value: '', label: '', isDivider: true });
       suggestions.push({
-        value: '',
-        label: locale === 'zh' ? '空格 → 下一个条件' : 'Space → next filter',
-        isHeader: true,
+        value: `${neg}${valueFormat(`${selPrefix}${closest}`)}`,
+        label: closest,
+        hint: '您是不是要找？',
+        didYouMean: closest,
       });
-      if (isMulti) {
-        suggestions.push({
-          value: '',
-          label: locale === 'zh' ? '逗号 → 添加值' : ', → add value',
-          isHeader: true,
-        });
+        }
       }
     }
   } else if (parsedToken.phase === 'freeText' && parsedToken.filterConfig) {
@@ -814,10 +848,36 @@ function buildSuggestions(
         { value: `${labelPrefix}>=`, label: '≥ 大于等于', hint: '如: >=100' },
         { value: `${labelPrefix}<=`, label: '≤ 小于等于', hint: '如: <=100' },
         { value: `${labelPrefix}=`, label: '= 精确匹配', hint: '如: =100' },
-        { value: `${labelPrefix}`, label: '~ Range', hint: 'e.g. 100~200' },
+        { value: `${labelPrefix}`, label: '~ 范围', hint: '如: 100~200' },
       ];
-    } else if (cfg.type === 'dateRange' && !parsedToken.prefix) {
-      suggestions = [{ value: `${labelPrefix}`, label: 'Date range', hint: '2024-01-01~2024-12-31' }];
+    } else if (cfg.type === 'dateRange') {
+      if (!parsedToken.prefix) {
+        const today = dayjs();
+        const shortcuts = [
+          { label: '今天', start: today, end: today },
+          { label: '昨天', start: today.subtract(1, 'day'), end: today.subtract(1, 'day') },
+          { label: '近7天', start: today.subtract(6, 'day'), end: today },
+          { label: '近15天', start: today.subtract(14, 'day'), end: today },
+          { label: '近30天', start: today.subtract(29, 'day'), end: today },
+          { label: '近90天', start: today.subtract(89, 'day'), end: today },
+        ];
+        suggestions = [
+          ...shortcuts.map(({ label }) => ({
+            value: `${labelPrefix}${label}`,
+            label,
+            hint: label,
+          })),
+          { value: '', label: '', isDivider: true },
+          { value: `${labelPrefix}`, label: '自由', hint: '2024-01-01~2024-12-31' },
+        ];
+      } else if (/^\d/.test(parsedToken.prefix)) {
+        const now = dayjs().format('YYYY-MM-DD HH:mm:ss');
+        suggestions = [{
+          value: `${labelPrefix}${now}`,
+          label: now,
+          hint: '当前时间',
+        }];
+      }
     }
   }
 
