@@ -203,5 +203,6 @@ export interface FilterChipBarVM {
   setPresetName: (n: string) => void;
   handleSavePreset: () => void;
   dismissHint: () => void;
+  clearRecent: () => void;
   isCurrentSearchPreset: boolean;
 }

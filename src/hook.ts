@@ -832,12 +832,17 @@ function buildSuggestions(
       selectedLabels = endsWithComma
         ? parts.filter(Boolean)
         : parts.slice(0, -1).filter(Boolean);
+      if (!endsWithComma && parts.length > 0) {
+        const lastPart = parts[parts.length - 1];
+        const exactMatch = opts.find((o) => o.label.toLowerCase() === lastPart.toLowerCase());
+        if (exactMatch) selectedLabels.push(lastPart);
+      }
     }
 
     suggestions = suggestions.concat(
       opts
         .filter((o) => !selectedLabels.some((s) => s.toLowerCase() === o.label.toLowerCase()))
-        .filter((o) => !lower || o.label.toLowerCase().includes(lower))
+        .filter((o) => !lower || selectedLabels.length > 0 || o.label.toLowerCase().includes(lower))
         .map((o) => {
           const selPrefix = selectedLabels.length > 0 ? selectedLabels.join(',') + ',' : '';
           return { value: `${neg}${valueFormat(`${selPrefix}${o.label}`)}`, label: o.label };
@@ -910,8 +915,9 @@ function buildSuggestions(
   return suggestions;
 }
 
-export function useFilterChipBarVM(opts: UseFilterChipBarOptions & { placeholder?: string }): Omit<FilterChipBarVM, 'statusTabs'> {
-  const fcb = useFilterChipBar(opts);
+export function useFilterChipBarVM(opts: UseFilterChipBarOptions & { placeholder?: string; onSearch?: () => void }): Omit<FilterChipBarVM, 'statusTabs'> {
+  const fcb = useFilterChipBar({ ...opts, onSearch: opts.onSearch });
+
 
   useEffect(() => {
     if (fcb.isPresetOpen && fcb.searchText && !fcb.presetName) {
@@ -1029,6 +1035,7 @@ export function useFilterChipBarVM(opts: UseFilterChipBarOptions & { placeholder
     setPresetName: fcb.setPresetName,
     handleSavePreset: fcb.handleSavePreset,
     dismissHint: fcb.dismissHint,
+    clearRecent: fcb.clearRecent,
     isCurrentSearchPreset,
   };
 }

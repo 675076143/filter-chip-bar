@@ -20,7 +20,7 @@ export default function FilterChipBarPanel({ vm, onDatePicker }: Props) {
             if (s.type === 'divider') return <div key={s.key} style={{ height: 1, background: C.colorBorderSecondary, margin: '4px 12px' }} />;
             if (s.type === 'header') return <div key={s.key} style={{ padding: '6px 12px 2px', fontSize: 11, color: C.colorTextQuaternary, fontWeight: 600 }}>{s.label}</div>;
             return (
-              <div key={s.key} onMouseDown={(e) => { e.preventDefault(); if (s.type === 'datepicker') onDatePicker?.(s.key); else s.onSelect(); }} style={{ ...row, justifyContent: 'space-between', cursor: 'pointer', color: C.colorText, background: s.active ? '#e6f7ff' : 'transparent' }}>
+              <div key={s.key} onMouseDown={(e) => { e.preventDefault(); if (s.type === 'datepicker') onDatePicker?.(s.key); else s.onSelect(); }} onMouseEnter={(e) => { if (!s.active) (e.currentTarget as HTMLElement).style.background = '#f5f5f5'; }} onMouseLeave={(e) => { if (!s.active) (e.currentTarget as HTMLElement).style.background = 'transparent'; }} style={{ ...row, justifyContent: 'space-between', cursor: 'pointer', color: C.colorText, background: s.active ? '#e6f7ff' : 'transparent' }}>
                 <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.label}</span>
                 {s.hint && <span style={{ fontSize: 11, color: C.colorTextQuaternary, flexShrink: 0 }}>{s.hint}</span>}
               </div>
@@ -40,6 +40,9 @@ export default function FilterChipBarPanel({ vm, onDatePicker }: Props) {
                 <span onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); h.onRemove(); }} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', fontSize: 14, lineHeight: 1, color: C.colorTextQuaternary, cursor: 'pointer', opacity: 0, transition: 'opacity 0.15s' }} onMouseEnter={(e) => { e.stopPropagation(); (e.currentTarget as HTMLElement).style.opacity = '1'; (e.currentTarget as HTMLElement).style.color = '#ff4d4f'; }} onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.opacity = '0'; (e.currentTarget as HTMLElement).style.color = C.colorTextQuaternary; }}>×</span>
               </div>
             ))}
+            <div onMouseDown={(e) => { e.preventDefault(); vm.clearRecent(); }} style={{ ...row, color: C.colorTextSecondary, cursor: 'pointer' }} onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#f5f5f5'; }} onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}>
+              🗑 清空历史
+            </div>
           </>
         )}
       </div>

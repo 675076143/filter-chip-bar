@@ -200,8 +200,10 @@ export default function FilterChipBar({
         setPresetName: () => {},
         handleSavePreset: () => {},
         dismissHint: () => {},
-        isCurrentSearchPreset: false,
-      }}
+        clearRecent: fcb.clearRecent,
+          isCurrentSearchPreset: false,
+          statusTabs: [],
+        }}
       onDatePicker={(prefix: string) => setDatePickerState({ prefix })}
     />
   );
@@ -357,7 +359,9 @@ export default function FilterChipBar({
                   onChange={({ start, end }) => {
                     const s = start.format('YYYY-MM-DD');
                     const e = end.format('YYYY-MM-DD');
-                    fcb.setSearchText(`${datePickerState.prefix}${s}~${e}`);
+                    const lastSpace = fcb.searchText.lastIndexOf(' ');
+                    const before = lastSpace === -1 ? '' : fcb.searchText.slice(0, lastSpace + 1);
+                    fcb.setSearchText(`${before}${datePickerState.prefix}${s}~${e}`);
                     setDatePickerState(null);
                     fcb.setDropdownOpen(false);
                   }}
