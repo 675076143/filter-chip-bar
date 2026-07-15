@@ -8,25 +8,29 @@
     "url": "https://github.com/675076143/filter-chip-bar"
   },
   "type": "module",
-  "main": "./src/index.ts",
-  "module": "./src/index.ts",
-  "types": "./src/index.ts",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./src/index.ts",
-      "import": "./src/index.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     },
     "./headless": {
-      "types": "./src/headless.ts",
-      "import": "./src/headless.ts"
+      "types": "./dist/headless.d.ts",
+      "import": "./dist/headless.js",
+      "require": "./dist/headless.cjs"
     },
     "./antd6": {
-      "types": "./examples/antd6-renderer.tsx",
-      "import": "./examples/antd6-renderer.tsx"
+      "types": "./dist/antd6.d.ts",
+      "import": "./dist/antd6.js",
+      "require": "./dist/antd6.cjs"
     },
     "./primitives": {
-      "types": "./src/primitives.ts",
-      "import": "./src/primitives.ts"
+      "types": "./dist/primitives.d.ts",
+      "import": "./dist/primitives.js",
+      "require": "./dist/primitives.cjs"
     },
     "./styles": {
       "default": "./src/styles/globals.css"
@@ -34,11 +38,12 @@
   },
   "files": [
     "dist",
-    "src"
+    "src/styles"
   ],
   "sideEffects": ["**/*.css"],
   "scripts": {
     "build": "tsup",
+    "prepack": "npm run build",
     "dev": "tsup --watch",
     "lint": "oxlint src/",
     "test": "vitest run",
@@ -57,6 +62,8 @@
     "radix"
   ],
   "peerDependencies": {
+    "@ant-design/icons": ">=6",
+    "antd": ">=6",
     "react": ">=17",
     "react-dom": ">=17"
   },
@@ -96,6 +103,7 @@
     "@tanstack/react-table": "^8.20.0",
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
+    "antd": "^6.0.0",
     "autoprefixer": "^10.5.0",
     "oxlint": "^0.16.0",
     "postcss": "^8.5.15",
@@ -110,34 +118,6 @@
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",
-    "access": "public",
-    "main": "./dist/index.cjs",
-    "module": "./dist/index.js",
-    "types": "./dist/index.d.ts",
-    "exports": {
-      ".": {
-        "import": "./dist/index.js",
-        "require": "./dist/index.cjs",
-        "types": "./dist/index.d.ts"
-      },
-      "./headless": {
-        "import": "./dist/headless.js",
-        "require": "./dist/headless.cjs",
-        "types": "./dist/headless.d.ts"
-      },
-      "./antd6": {
-        "import": "./dist/antd6.js",
-        "require": "./dist/antd6.cjs",
-        "types": "./dist/antd6.d.ts"
-      },
-      "./primitives": {
-        "import": "./dist/primitives.js",
-        "require": "./dist/primitives.cjs",
-        "types": "./dist/primitives.d.ts"
-      },
-      "./styles": {
-        "default": "./src/styles/globals.css"
-      }
-    }
+    "access": "public"
   }
 }
