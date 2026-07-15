@@ -38,18 +38,23 @@ export function buildHints(configs: { label: string; type?: string; aliases?: st
 
 const USAGE_KEY = (ns: string) => `${ns}:usage`;
 
-export function getUsageCount(namespace: string): number {
+function resolveStorage(storage?: FilterChipBarStorage): FilterChipBarStorage | undefined {
+  if (storage) return storage;
+  return typeof localStorage === 'undefined' ? undefined : localStorage;
+}
+
+export function getUsageCount(namespace: string, storage?: FilterChipBarStorage): number {
   try {
-    return Number(localStorage.getItem(USAGE_KEY(namespace)) ?? '0');
+    return Number(resolveStorage(storage)?.getItem(USAGE_KEY(namespace)) ?? '0');
   } catch {
     return 0;
   }
 }
 
-export function incrementUsage(namespace: string): number {
-  const next = getUsageCount(namespace) + 1;
+export function incrementUsage(namespace: string, storage?: FilterChipBarStorage): number {
+  const next = getUsageCount(namespace, storage) + 1;
   try {
-    localStorage.setItem(USAGE_KEY(namespace), String(next));
+    resolveStorage(storage)?.setItem(USAGE_KEY(namespace), String(next));
   } catch {
     // quota exceeded or privacy mode — silently ignore
   }
@@ -59,12 +64,13 @@ export function incrementUsage(namespace: string): number {
 export function getPendingHint(
   namespace: string,
   hints: ProgressiveHint[],
+  storage?: FilterChipBarStorage,
 ): ProgressiveHint | null {
-  const count = getUsageCount(namespace);
+  const count = getUsageCount(namespace, storage);
   for (const hint of hints) {
     if (count >= hint.threshold) {
       try {
-        if (!localStorage.getItem(`${namespace}:hint:${hint.threshold}`)) {
+        if (!resolveStorage(storage)?.getItem(`${namespace}:hint:${hint.threshold}`)) {
           return hint;
         }
       } catch {
@@ -75,10 +81,11 @@ export function getPendingHint(
   return null;
 }
 
-export function markHintSeen(namespace: string, hint: ProgressiveHint): void {
+export function markHintSeen(namespace: string, hint: ProgressiveHint, storage?: FilterChipBarStorage): void {
   try {
-    localStorage.setItem(`${namespace}:hint:${hint.threshold}`, '1');
+    resolveStorage(storage)?.setItem(`${namespace}:hint:${hint.threshold}`, '1');
   } catch {
     // quota exceeded or privacy mode — silently ignore
   }
 }
+import type { FilterChipBarStorage } from './types';

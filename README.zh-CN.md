@@ -233,6 +233,7 @@ function MyFilterBar({ chipConfigs, onFiltersChange }) {
 | `footerExtra` | `ReactNode` | | Tab 栏右侧自定义内容(靠右对齐) |
 | `searchResultCount` | `number` | | 搜索结果总数(用于记录搜索历史) |
 | `searchLoading` | `boolean` | | 加载状态(加载结束时自动保存搜索历史) |
+| `storage` | `FilterChipBarStorage` | | 可选同步存储适配器，默认使用 `localStorage` |
 
 ### `FilterChipBarResult`
 

@@ -233,6 +233,7 @@ When the user types a keyword that matches a command, it appears in the dropdown
 | `footerExtra` | `ReactNode` | | Custom content on the tab bar row (right-aligned) |
 | `searchResultCount` | `number` | | Total result count (for recent search tracking) |
 | `searchLoading` | `boolean` | | Loading state (triggers recent search save on completion) |
+| `storage` | `FilterChipBarStorage` | | Optional synchronous storage adapter; defaults to `localStorage` |
 
 ### `FilterChipBarResult`
 

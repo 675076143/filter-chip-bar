@@ -14,6 +14,7 @@ import {
   type FilterChipBarResult,
   type TextToken,
   type ActionCommand,
+  type FilterChipBarStorage,
 } from './types';
 import { truncate } from './tokenize';
 import { useFilterChipBar, autoPlaceholder } from './hook';
@@ -53,6 +54,7 @@ export interface FilterChipBarProps {
   searchResultCount?: number;
   searchLoading?: boolean;
   locale?: 'en' | 'zh';
+  storage?: FilterChipBarStorage;
 }
 
 export default function FilterChipBar({
@@ -73,6 +75,7 @@ export default function FilterChipBar({
   searchResultCount,
   searchLoading,
   locale = 'en',
+  storage,
 }: FilterChipBarProps) {
   const listboxId = `${storageNamespace.replace(/[^a-zA-Z0-9_-]/g, '-')}-filter-chip-listbox`;
   const resolvedPlaceholder = placeholder ?? autoPlaceholder(chipConfigs, locale);
@@ -87,6 +90,7 @@ export default function FilterChipBar({
     onFiltersChange,
     searchResultCount,
     searchLoading,
+    storage,
   });
 
   const isCurrentSearchPreset = useMemo(

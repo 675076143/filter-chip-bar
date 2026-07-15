@@ -59,4 +59,17 @@ describe('local storage persistence', () => {
     vi.mocked(localStorage.setItem).mockImplementation(() => { throw new Error('quota'); });
     expect(incrementUsage('orders')).toBe(2);
   });
+
+  it('uses an injected storage adapter instead of global localStorage', () => {
+    const storage = createStorage();
+    const presets: SearchPreset[] = [
+      { id: 'custom', name: 'Custom', searchText: 'Status:Passing', tab: -1, createdAt: 1 },
+    ];
+    vi.mocked(localStorage.setItem).mockImplementation(() => { throw new Error('global disabled'); });
+
+    savePresets('orders', presets, storage);
+    expect(loadPresets('orders', storage)).toEqual(presets);
+    expect(incrementUsage('orders', storage)).toBe(1);
+    expect(getUsageCount('orders', storage)).toBe(1);
+  });
 });

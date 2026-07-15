@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Shared quoted-value scanner
 - Keyboard navigation and persistence tests
 - Changelog section on the public website
+- Injectable synchronous storage adapter
 
 ### Changed
 - Package manager migrated from npm to pnpm workspaces

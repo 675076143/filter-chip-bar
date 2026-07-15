@@ -16,6 +16,7 @@ import {
   type FilterChipBarResult,
   type TextToken,
   type ActionCommand,
+  type FilterChipBarStorage,
 } from '../src/types';
 import { truncate } from '../src/tokenize';
 import { useFilterChipBar } from '../src/hook';
@@ -65,6 +66,7 @@ export interface FilterChipBarAntd6Props {
   footerExtra?: ReactNode;
   searchResultCount?: number;
   searchLoading?: boolean;
+  storage?: FilterChipBarStorage;
 }
 
 export default function FilterChipBarAntd6({
@@ -84,6 +86,7 @@ export default function FilterChipBarAntd6({
   footerExtra,
   searchResultCount,
   searchLoading,
+  storage,
 }: FilterChipBarAntd6Props) {
   const { token } = theme.useToken();
   const listboxId = `${storageNamespace.replace(/[^a-zA-Z0-9_-]/g, '-')}-filter-chip-listbox`;
@@ -100,6 +103,7 @@ export default function FilterChipBarAntd6({
     fontInfo: { fontSize: token.fontSize, fontFamily: token.fontFamily },
     searchResultCount,
     searchLoading,
+    storage,
   });
 
   const renderTextToken = (t: TextToken, key: number): ReactNode => {

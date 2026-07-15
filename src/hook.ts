@@ -9,6 +9,7 @@ import {
   type SuggestionItem,
   type TextToken,
   type ActionCommand,
+  type FilterChipBarStorage,
   type SuggestionVM,
   type HistoryVM,
   type PresetVM,
@@ -81,6 +82,7 @@ export interface UseFilterChipBarOptions {
   searchResultCount?: number;
   searchLoading?: boolean;
   hints?: ProgressiveHint[];
+  storage?: FilterChipBarStorage;
 }
 
 export interface UseFilterChipBarReturn {
@@ -147,6 +149,7 @@ export function useFilterChipBar({
   searchResultCount,
   searchLoading,
   hints = DEFAULT_HINTS,
+  storage,
 }: UseFilterChipBarOptions): UseFilterChipBarReturn {
   const dynamicHints = useMemo(() => hints === DEFAULT_HINTS ? buildHints(chipConfigs) : hints, [chipConfigs, hints]);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -171,7 +174,9 @@ export function useFilterChipBar({
   const [presetName, setPresetName] = useState('');
   const [resolvedOptions, setResolvedOptions] = useState<Record<string, FilterOption[]>>({});
   const [loadingLabels, setLoadingLabels] = useState<Set<string>>(new Set());
-  const [recentSearches, setRecentSearches] = useState<RecentSearch[]>(() => loadRecent(storageNamespace));
+  const [recentSearches, setRecentSearches] = useState<RecentSearch[]>(
+    () => loadRecent(storageNamespace, storage),
+  );
   const pendingSearchRef = useRef<string | null>(null);
   const mountedRef = useRef(true);
   const focusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -259,21 +264,21 @@ export function useFilterChipBar({
       cbRef.current?.({ searchText: normalizedText, chips: cleaned, freeText, tab: s });
       searchRef.current?.();
       pendingSearchRef.current = normalizedText.trim() || null;
-      incrementUsage(storageNamespace);
-      const hint = getPendingHint(storageNamespace, dynamicHints);
+      incrementUsage(storageNamespace, storage);
+      const hint = getPendingHint(storageNamespace, dynamicHints, storage);
       if (hint) setPendingHint(hint);
     },
-    [chipConfigs, allOptions, storageNamespace, dynamicHints, normalizeSearchText],
+    [chipConfigs, allOptions, storageNamespace, dynamicHints, normalizeSearchText, storage],
   );
 
   const [pendingHint, setPendingHint] = useState<ProgressiveHint | null>(null);
 
   const dismissHint = useCallback(() => {
     if (pendingHint) {
-      markHintSeen(storageNamespace, pendingHint);
+      markHintSeen(storageNamespace, pendingHint, storage);
       setPendingHint(null);
     }
-  }, [pendingHint, storageNamespace]);
+  }, [pendingHint, storageNamespace, storage]);
 
   useEffect(() => {
     applyFilters(searchText, tab);
@@ -281,8 +286,9 @@ export function useFilterChipBar({
   }, [tab]);
 
   useEffect(() => {
-    setPresets(loadPresets(storageNamespace));
-  }, [storageNamespace]);
+    setPresets(loadPresets(storageNamespace, storage));
+    setRecentSearches(loadRecent(storageNamespace, storage));
+  }, [storageNamespace, storage]);
 
   useEffect(() => {
     setActiveIdx(-1);
@@ -301,24 +307,24 @@ export function useFilterChipBar({
           frequency: (existing?.frequency ?? 0) + 1,
         };
         const next = [entry, ...prev.filter((e) => e.text !== text)].slice(0, 8);
-        saveRecent(storageNamespace, next);
+        saveRecent(storageNamespace, next, storage);
         return next;
       });
     }
-  }, [searchLoading, searchResultCount, storageNamespace]);
+  }, [searchLoading, searchResultCount, storageNamespace, storage]);
 
   const clearRecent = useCallback(() => {
     setRecentSearches([]);
-    saveRecent(storageNamespace, []);
-  }, [storageNamespace]);
+    saveRecent(storageNamespace, [], storage);
+  }, [storageNamespace, storage]);
 
   const removeRecent = useCallback((text: string) => {
     setRecentSearches((prev) => {
       const next = prev.filter((e) => e.text !== text);
-      saveRecent(storageNamespace, next);
+      saveRecent(storageNamespace, next, storage);
       return next;
     });
-  }, [storageNamespace]);
+  }, [storageNamespace, storage]);
 
   useEffect(() => {
     if (activeIdx >= 0 && itemRefs.current[activeIdx]) {
@@ -388,9 +394,9 @@ export function useFilterChipBar({
     };
     const next = [preset, ...presets];
     setPresets(next);
-    savePresets(storageNamespace, next);
+    savePresets(storageNamespace, next, storage);
     setPresetName('');
-  }, [presetName, searchText, tab, presets, storageNamespace]);
+  }, [presetName, searchText, tab, presets, storageNamespace, storage]);
 
   const handleLoadPreset = useCallback((preset: SearchPreset) => {
     setSearchText(preset.searchText);
@@ -402,9 +408,9 @@ export function useFilterChipBar({
     (id: string) => {
       const next = presets.filter((p) => p.id !== id);
       setPresets(next);
-      savePresets(storageNamespace, next);
+      savePresets(storageNamespace, next, storage);
     },
-    [presets, storageNamespace],
+    [presets, storageNamespace, storage],
   );
 
   const buildShareUrl = useCallback((preset: SearchPreset) => {

@@ -15,6 +15,7 @@ export {
   type SuggestionItem,
   type TextToken,
   type ActionCommand,
+  type FilterChipBarStorage,
   loadPresets,
   savePresets,
   loadRecent,

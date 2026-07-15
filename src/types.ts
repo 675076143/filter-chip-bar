@@ -49,6 +49,16 @@ export interface RecentSearch {
   frequency: number;
 }
 
+export interface FilterChipBarStorage {
+  getItem(key: string): string | null;
+  setItem(key: string, value: string): void;
+}
+
+function resolveStorage(storage?: FilterChipBarStorage): FilterChipBarStorage | undefined {
+  if (storage) return storage;
+  return typeof localStorage === 'undefined' ? undefined : localStorage;
+}
+
 export interface FilterChipBarResult {
   searchText: string;
   chips: Record<string, unknown>;
@@ -99,35 +109,35 @@ export function recentStorageKey(namespace: string): string {
   return `${namespace}:recent`;
 }
 
-export function loadPresets(namespace: string): SearchPreset[] {
+export function loadPresets(namespace: string, storage?: FilterChipBarStorage): SearchPreset[] {
   try {
-    const raw = localStorage.getItem(presetStorageKey(namespace));
+    const raw = resolveStorage(storage)?.getItem(presetStorageKey(namespace));
     return raw ? (JSON.parse(raw) as SearchPreset[]) : [];
   } catch {
     return [];
   }
 }
 
-export function savePresets(namespace: string, presets: SearchPreset[]): void {
+export function savePresets(namespace: string, presets: SearchPreset[], storage?: FilterChipBarStorage): void {
   try {
-    localStorage.setItem(presetStorageKey(namespace), JSON.stringify(presets));
+    resolveStorage(storage)?.setItem(presetStorageKey(namespace), JSON.stringify(presets));
   } catch {
     // quota exceeded or privacy mode — silently ignore
   }
 }
 
-export function loadRecent(namespace: string): RecentSearch[] {
+export function loadRecent(namespace: string, storage?: FilterChipBarStorage): RecentSearch[] {
   try {
-    const raw = localStorage.getItem(recentStorageKey(namespace));
+    const raw = resolveStorage(storage)?.getItem(recentStorageKey(namespace));
     return raw ? (JSON.parse(raw) as RecentSearch[]) : [];
   } catch {
     return [];
   }
 }
 
-export function saveRecent(namespace: string, searches: RecentSearch[]): void {
+export function saveRecent(namespace: string, searches: RecentSearch[], storage?: FilterChipBarStorage): void {
   try {
-    localStorage.setItem(recentStorageKey(namespace), JSON.stringify(searches.slice(0, 8)));
+    resolveStorage(storage)?.setItem(recentStorageKey(namespace), JSON.stringify(searches.slice(0, 8)));
   } catch {
     // quota exceeded or privacy mode — silently ignore
   }
