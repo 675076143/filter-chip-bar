@@ -19,6 +19,17 @@
     "./headless": {
       "types": "./src/headless.ts",
       "import": "./src/headless.ts"
+    },
+    "./antd6": {
+      "types": "./examples/antd6-renderer.tsx",
+      "import": "./examples/antd6-renderer.tsx"
+    },
+    "./primitives": {
+      "types": "./src/primitives.ts",
+      "import": "./src/primitives.ts"
+    },
+    "./styles": {
+      "default": "./src/styles/globals.css"
     }
   },
   "files": [
@@ -113,6 +124,19 @@
         "import": "./dist/headless.js",
         "require": "./dist/headless.cjs",
         "types": "./dist/headless.d.ts"
+      },
+      "./antd6": {
+        "import": "./dist/antd6.js",
+        "require": "./dist/antd6.cjs",
+        "types": "./dist/antd6.d.ts"
+      },
+      "./primitives": {
+        "import": "./dist/primitives.js",
+        "require": "./dist/primitives.cjs",
+        "types": "./dist/primitives.d.ts"
+      },
+      "./styles": {
+        "default": "./src/styles/globals.css"
       }
     }
   }

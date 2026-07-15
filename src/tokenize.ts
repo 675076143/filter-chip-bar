@@ -1,5 +1,5 @@
 import type { ChipConfig, FilterOption, TextToken } from './types';
-import { matchConfig } from './parser';
+import { matchConfig, scanQueryParts } from './parser';
 
 const TRUNCATE_LIMIT = 40;
 
@@ -38,7 +38,8 @@ export function tokenizeSearchText(
   chipConfigs: ChipConfig[],
   resolvedOptions?: Record<string, FilterOption[]>,
 ): TextToken[] {
-  const parts = mergeDateRangeParts(text.split(/(\s+)/), chipConfigs);
+  if (text === '') return [{ type: 'whitespace', text: '' }];
+  const parts = mergeDateRangeParts(scanQueryParts(text).map((part) => part.text), chipConfigs);
   return parts.map((part) => {
     if (/^\s*$/.test(part)) {
       return { type: 'whitespace', text: part };

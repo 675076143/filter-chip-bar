@@ -11,7 +11,15 @@ export interface TabOption {
 
 export type FilterType = 'select' | 'multiSelect' | 'input' | 'dateRange' | 'numberRange';
 
-export type AsyncOptions = (chips?: Record<string, unknown>) => Promise<FilterOption[]>;
+export interface AsyncOptionsContext {
+  /** Aborted when the query changes or the component unmounts. */
+  signal: AbortSignal;
+}
+
+export type AsyncOptions = (
+  chips?: Record<string, unknown>,
+  context?: AsyncOptionsContext,
+) => Promise<FilterOption[]>;
 
 export interface ChipConfig {
   type: FilterType;
@@ -22,6 +30,8 @@ export interface ChipConfig {
   initialOperator?: string;
   precision?: number;
   min?: number;
+  /** How repeated occurrences of this field are normalized. Defaults to `replace`. */
+  duplicatePolicy?: 'replace' | 'preserve';
 }
 
 export interface SearchPreset {

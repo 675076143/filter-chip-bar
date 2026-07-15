@@ -3,6 +3,7 @@ export {
   type TabOption,
   type FilterType,
   type AsyncOptions,
+  type AsyncOptionsContext,
   type ChipConfig,
   type SearchPreset,
   type RecentSearch,
@@ -22,7 +23,7 @@ export {
   loadRecent,
   saveRecent,
 } from './types';
-export { parseCurrentToken, parseQuery, type ParsedToken } from './parser';
+export { dedupeFilterTokens, parseCurrentToken, parseQuery, type ParsedToken } from './parser';
 export { tokenizeSearchText, truncate } from './tokenize';
 export {
   useFilterChipBar,
@@ -40,5 +41,3 @@ export {
   markHintSeen,
   type ProgressiveHint,
 } from './progressive';
-export { default as FilterChipBarPanel } from './FilterChipBarPanel';
-export { CalendarRangePanel } from './CalendarRangePanel';

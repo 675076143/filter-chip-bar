@@ -16,9 +16,9 @@ import {
   type FilterChipBarResult,
   type TextToken,
   type ActionCommand,
-} from '../types';
-import { truncate } from '../tokenize';
-import { useFilterChipBar } from '../hook';
+} from '../src/types';
+import { truncate } from '../src/tokenize';
+import { useFilterChipBar } from '../src/hook';
 
 const DEFAULT_PLACEHOLDER = '搜索或输入筛选条件';
 
@@ -55,6 +55,8 @@ export interface FilterChipBarAntd6Props {
   tabs?: TabOption[];
   rightExtra?: ReactNode;
   initialSearchText?: string;
+  value?: string;
+  onValueChange?: (value: string) => void;
   initialTab?: number;
   commands?: ActionCommand[];
   placeholder?: string;
@@ -72,6 +74,8 @@ export default function FilterChipBarAntd6({
   tabs,
   rightExtra,
   initialSearchText = '',
+  value,
+  onValueChange,
   initialTab = -1,
   commands,
   placeholder = DEFAULT_PLACEHOLDER,
@@ -88,6 +92,8 @@ export default function FilterChipBarAntd6({
     storageNamespace,
     commands,
     initialSearchText,
+    value,
+    onValueChange,
     initialTab,
     onFiltersChange,
     fontInfo: { fontSize: token.fontSize, fontFamily: token.fontFamily },

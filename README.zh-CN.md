@@ -223,6 +223,8 @@ function MyFilterBar({ chipConfigs, onFiltersChange }) {
 | `tabs` | `TabOption[]` | | Tab 栏选项,含可选 count(空数组 = 不渲染) |
 | `commands` | `ActionCommand[]` | | 命令面板操作 |
 | `initialSearchText` | `string` | | 预填搜索文本(如从 URL 恢复) |
+| `value` | `string` | | 受控查询文本 |
+| `onValueChange` | `(value: string) => void` | | 查询文本变化时调用 |
 | `initialTab` | `string \| number` | | 预选 tab(默认 `-1` = 全部) |
 | `placeholder` | `string` | | 输入框占位文本 |
 | `syntaxHelp` | `ReactNode` | | 自定义语法帮助内容 |
@@ -249,7 +251,8 @@ interface FilterChipBarResult {
 interface ChipConfig {
   type: 'select' | 'multiSelect' | 'input' | 'dateRange' | 'numberRange';
   label: string;
-  options?: FilterOption[] | (() => Promise<FilterOption[]>);  // 静态数组或异步加载
+  options?: FilterOption[] | ((chips, { signal }) => Promise<FilterOption[]>);
+  duplicatePolicy?: 'replace' | 'preserve'; // 默认 replace
   precision?: number;      // numberRange 小数位数
   min?: number;            // numberRange 最小值
 }
@@ -351,6 +354,8 @@ filter-chip-bar
 ├── FilterChipBar               ← shadcn 渲染器(默认导出)
 │   Radix Popover + Tailwind CSS + lucide-react
 │
+├── FilterChipBarPanel          ← 共享 UI primitives(filter-chip-bar/primitives)
+│
 └── FilterChipBarAntd6          ← antd6 适配器(filter-chip-bar/antd6)
     Ant Design 6 + @ant-design/icons
 ```
@@ -361,7 +366,9 @@ filter-chip-bar
 |---------|------|
 | `filter-chip-bar` | shadcn 渲染器 + hook + 全部类型 |
 | `filter-chip-bar/headless` | 纯 hook(零 UI 依赖) |
+| `filter-chip-bar/primitives` | 共享面板、日历与 ViewModel 类型 |
 | `filter-chip-bar/antd6` | antd6 渲染器 + hook + 全部类型 |
+| `filter-chip-bar/styles` | shadcn CSS 变量与 Tailwind layers |
 
 ## 开发
 

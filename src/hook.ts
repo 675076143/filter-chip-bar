@@ -12,19 +12,17 @@ import {
   type SuggestionVM,
   type HistoryVM,
   type PresetVM,
-  type StatusTabVM,
   type InputVM,
   type DropdownVM,
   type FilterChipBarVM,
-  type TabOption,
   loadPresets,
   savePresets,
   loadRecent,
   saveRecent,
 } from './types';
-import { parseCurrentToken, parseQuery, type ParsedToken } from './parser';
+import { dedupeFilterTokens, parseCurrentToken, parseQuery, type ParsedToken } from './parser';
 import { tokenizeSearchText } from './tokenize';
-import { findClosest, levenshtein } from './fuzzy';
+import { findClosest, isFuzzyMatch, levenshtein } from './fuzzy';
 import dayjs from 'dayjs';
 import {
   DEFAULT_HINTS,
@@ -43,7 +41,7 @@ const TYPE_HINTS: Record<string, string> = {
   numberRange: '数值',
 };
 
-export function autoPlaceholder(configs: ChipConfig[]): string {
+export function autoPlaceholder(configs: ChipConfig[], locale: 'en' | 'zh' = 'zh'): string {
   const parts: string[] = [];
   for (const cfg of configs.slice(0, 4)) {
     if (cfg.prefix) {
@@ -56,6 +54,11 @@ export function autoPlaceholder(configs: ChipConfig[]): string {
       parts.push(`${cfg.label}:...`);
     }
   }
+  if (locale === 'en') {
+    return parts.length > 0
+      ? `Search or filter, e.g. ${parts.join(', ')}`
+      : 'Search or type filters...';
+  }
   return parts.length > 0 ? `输入关键词或筛选条件,例: ${parts.join(', ')}` : '输入关键词或筛选条件';
 }
 
@@ -66,6 +69,10 @@ export interface UseFilterChipBarOptions {
   storageNamespace: string;
   commands?: ActionCommand[];
   initialSearchText?: string;
+  /** Controlled query text. */
+  value?: string;
+  /** Called for every query text change, including normalization. */
+  onValueChange?: (value: string) => void;
   initialTab?: string | number;
   onFiltersChange?: (result: FilterChipBarResult) => void;
   onSearch?: () => void;
@@ -130,6 +137,8 @@ export function useFilterChipBar({
   storageNamespace,
   commands = [],
   initialSearchText = '',
+  value,
+  onValueChange,
   initialTab = -1,
   onFiltersChange,
   onSearch,
@@ -144,7 +153,14 @@ export function useFilterChipBar({
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
   const scrollPosRef = useRef(0);
 
-  const [searchText, setSearchText] = useState(initialSearchText);
+  const [internalSearchText, setInternalSearchText] = useState(value ?? initialSearchText);
+  const searchText = value ?? internalSearchText;
+  const onValueChangeRef = useRef(onValueChange);
+  onValueChangeRef.current = onValueChange;
+  const setSearchText = useCallback((nextValue: string) => {
+    if (value === undefined) setInternalSearchText(nextValue);
+    onValueChangeRef.current?.(nextValue);
+  }, [value]);
   const [tab, setTab] = useState(initialTab);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [activeIdx, setActiveIdx] = useState(-1);
@@ -156,6 +172,20 @@ export function useFilterChipBar({
   const [loadingLabels, setLoadingLabels] = useState<Set<string>>(new Set());
   const [recentSearches, setRecentSearches] = useState<RecentSearch[]>(() => loadRecent(storageNamespace));
   const pendingSearchRef = useRef<string | null>(null);
+  const mountedRef = useRef(true);
+  const focusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const selectionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const scrollFrameRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      if (focusTimerRef.current) clearTimeout(focusTimerRef.current);
+      if (selectionTimerRef.current) clearTimeout(selectionTimerRef.current);
+      if (scrollFrameRef.current != null) cancelAnimationFrame(scrollFrameRef.current);
+    };
+  }, []);
 
   const currentChips = useMemo(() => {
     const { chips } = parseQuery(searchText, chipConfigs, {});
@@ -164,6 +194,7 @@ export function useFilterChipBar({
 
   useEffect(() => {
     let cancelled = false;
+    const controller = new AbortController();
     const timer = setTimeout(() => {
       const asyncConfigs = chipConfigs.filter(
         (c): c is ChipConfig & { options: AsyncOptions } => typeof c.options === 'function',
@@ -171,7 +202,7 @@ export function useFilterChipBar({
       asyncConfigs.forEach(async (config) => {
         setLoadingLabels((prev) => new Set(prev).add(config.label));
         try {
-          const result = await config.options(currentChips);
+          const result = await config.options(currentChips, { signal: controller.signal });
           if (!cancelled) {
             setResolvedOptions((prev) => ({ ...prev, [config.label]: result }));
           }
@@ -188,7 +219,11 @@ export function useFilterChipBar({
         }
       });
     }, 200);
-    return () => { cancelled = true; clearTimeout(timer); };
+    return () => {
+      cancelled = true;
+      controller.abort();
+      clearTimeout(timer);
+    };
   }, [chipConfigs, currentChips]);
 
   const allOptions = useMemo(() => {
@@ -208,20 +243,26 @@ export function useFilterChipBar({
   const searchRef = useRef(onSearch);
   searchRef.current = onSearch;
 
+  const normalizeSearchText = useCallback(
+    (text: string) => dedupeFilterTokens(text, chipConfigs),
+    [chipConfigs],
+  );
+
   const applyFilters = useCallback(
     (text: string, s: string | number) => {
-      const { chips, freeText } = parseQuery(text, chipConfigs, allOptions);
+      const normalizedText = normalizeSearchText(text);
+      const { chips, freeText } = parseQuery(normalizedText, chipConfigs, allOptions);
       const cleaned = Object.fromEntries(
         Object.entries(chips).filter(([, v]) => v !== undefined && v !== null && v !== ''),
       );
-      cbRef.current?.({ searchText: text, chips: cleaned, freeText, tab: s });
+      cbRef.current?.({ searchText: normalizedText, chips: cleaned, freeText, tab: s });
       searchRef.current?.();
-      pendingSearchRef.current = text.trim() || null;
-      const count = incrementUsage(storageNamespace);
+      pendingSearchRef.current = normalizedText.trim() || null;
+      incrementUsage(storageNamespace);
       const hint = getPendingHint(storageNamespace, dynamicHints);
       if (hint) setPendingHint(hint);
     },
-    [chipConfigs, allOptions, storageNamespace, dynamicHints],
+    [chipConfigs, allOptions, storageNamespace, dynamicHints, normalizeSearchText],
   );
 
   const [pendingHint, setPendingHint] = useState<ProgressiveHint | null>(null);
@@ -380,7 +421,9 @@ export function useFilterChipBar({
     const newText = before + newToken;
     setSearchText(newText);
     applyFilters(newText, tab);
-    setTimeout(() => {
+    if (focusTimerRef.current) clearTimeout(focusTimerRef.current);
+    focusTimerRef.current = setTimeout(() => {
+      if (!mountedRef.current) return;
       setDropdownOpen(true);
       inputRef.current?.focus();
     }, 0);
@@ -401,14 +444,17 @@ export function useFilterChipBar({
         !isPartial && (config?.type === 'multiSelect' || config?.type === 'select');
       const suffix = isPartial ? '' : supportsMultiValue ? '' : ' ';
       const newText = before + value + suffix;
-      setSearchText(newText);
-      if (!isPartial) applyFilters(newText, tab);
-      setTimeout(() => {
+      const nextText = isPartial ? newText : normalizeSearchText(newText);
+      setSearchText(nextText);
+      if (!isPartial) applyFilters(nextText, tab);
+      if (focusTimerRef.current) clearTimeout(focusTimerRef.current);
+      focusTimerRef.current = setTimeout(() => {
+        if (!mountedRef.current) return;
         setDropdownOpen(true);
         inputRef.current?.focus();
       }, 0);
     },
-    [searchText, tab, applyFilters, chipConfigs],
+    [searchText, tab, applyFilters, chipConfigs, normalizeSearchText],
   );
 
   const executeCommand = useCallback((cmd: ActionCommand) => {
@@ -429,16 +475,18 @@ export function useFilterChipBar({
         const input = e.currentTarget;
         const start = input.selectionStart ?? searchText.length;
         const end = input.selectionEnd ?? searchText.length;
-        const newValue = searchText.slice(0, start) + converted + searchText.slice(end);
+        const newValue = normalizeSearchText(searchText.slice(0, start) + converted + searchText.slice(end));
         setSearchText(newValue);
         setDropdownOpen(true);
         applyFilters(newValue, tab);
-        setTimeout(() => {
+        if (selectionTimerRef.current) clearTimeout(selectionTimerRef.current);
+        selectionTimerRef.current = setTimeout(() => {
+          if (!mountedRef.current) return;
           input.selectionStart = input.selectionEnd = start + converted.length;
         }, 0);
       }
     },
-    [searchText, tab, applyFilters],
+    [searchText, tab, applyFilters, normalizeSearchText],
   );
 
   const handleInputChange = useCallback(
@@ -468,15 +516,17 @@ export function useFilterChipBar({
           if (config?.type === 'input' && fValue && !fValue.startsWith('"')) {
             const prefix = prevSpaceIdx === -1 ? '' : beforeSpace.slice(0, prevSpaceIdx + 1);
             const newText = `${prefix}${fLabel}:"${fValue}" `;
-            setSearchText(newText);
+            const nextText = normalizeSearchText(newText);
+            setSearchText(nextText);
             setDropdownOpen(true);
-            applyFilters(newText, tab);
+            applyFilters(nextText, tab);
             return;
           }
         }
-        setSearchText(newValue);
+        const nextValue = normalizeSearchText(newValue);
+        setSearchText(nextValue);
         setDropdownOpen(true);
-        applyFilters(newValue, tab);
+        applyFilters(nextValue, tab);
         return;
       }
       setSearchText(newValue);
@@ -485,7 +535,7 @@ export function useFilterChipBar({
         applyFilters('', tab);
       }
     },
-    [searchText, chipConfigs, tab, applyFilters],
+    [searchText, chipConfigs, tab, applyFilters, normalizeSearchText],
   );
 
   const handleKeyDown = useCallback(
@@ -564,7 +614,9 @@ export function useFilterChipBar({
       }
       if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) {
         scrollPosRef.current = e.currentTarget.scrollLeft;
-        requestAnimationFrame(() => {
+        if (scrollFrameRef.current != null) cancelAnimationFrame(scrollFrameRef.current);
+        scrollFrameRef.current = requestAnimationFrame(() => {
+          if (!mountedRef.current) return;
           if (inputRef.current) {
             scrollPosRef.current = inputRef.current.scrollLeft;
             setInputScrollLeft(inputRef.current.scrollLeft);
@@ -585,8 +637,12 @@ export function useFilterChipBar({
   const commitSearch = useCallback(() => {
     setDropdownOpen(false);
     setActiveIdx(-1);
-    applyFilters(searchText, tab);
-  }, [searchText, tab, applyFilters]);
+    const nextText = normalizeSearchText(searchText);
+    if (nextText !== searchText) {
+      setSearchText(nextText);
+    }
+    applyFilters(nextText, tab);
+  }, [searchText, tab, applyFilters, normalizeSearchText]);
 
   const onInputScroll = useCallback((scrollLeft: number) => {
     scrollPosRef.current = scrollLeft;
@@ -749,8 +805,9 @@ function buildSuggestions(
           let best: { label: string; distance: number } | null = null;
           for (const opt of opts) {
             const prefix = opt.label.slice(0, lower.length + 2);
+            if (!isFuzzyMatch(lower, prefix, 3)) continue;
             const dist = levenshtein(lower, prefix);
-            if (dist > 0 && dist <= 3 && (!best || dist < best.distance)) {
+            if (dist > 0 && (!best || dist < best.distance)) {
               best = { label: opt.label, distance: dist };
             }
           }
@@ -832,17 +889,12 @@ function buildSuggestions(
       selectedLabels = endsWithComma
         ? parts.filter(Boolean)
         : parts.slice(0, -1).filter(Boolean);
-      if (!endsWithComma && parts.length > 0) {
-        const lastPart = parts[parts.length - 1];
-        const exactMatch = opts.find((o) => o.label.toLowerCase() === lastPart.toLowerCase());
-        if (exactMatch) selectedLabels.push(lastPart);
-      }
     }
 
     suggestions = suggestions.concat(
       opts
         .filter((o) => !selectedLabels.some((s) => s.toLowerCase() === o.label.toLowerCase()))
-        .filter((o) => !lower || selectedLabels.length > 0 || o.label.toLowerCase().includes(lower))
+        .filter((o) => !lower || o.label.toLowerCase().includes(lower))
         .map((o) => {
           const selPrefix = selectedLabels.length > 0 ? selectedLabels.join(',') + ',' : '';
           return { value: `${neg}${valueFormat(`${selPrefix}${o.label}`)}`, label: o.label };
@@ -927,7 +979,13 @@ export function useFilterChipBarVM(opts: UseFilterChipBarOptions & { placeholder
 
   const suggestions: SuggestionVM[] = useMemo(() => {
     return fcb.suggestions.map((s, idx) => ({
-      key: s.isDivider ? `divider-${idx}` : s.isHeader ? `header-${s.label}` : s.value,
+      key: s.isDivider
+        ? `divider-${idx}`
+        : s.isHeader
+          ? `header-${idx}-${s.label}`
+          : s.action === 'datePicker'
+            ? s.value
+            : `item-${idx}-${s.action ?? 'default'}-${s.value || s.label}`,
       label: s.label,
       hint: s.hint,
       active: idx === fcb.activeSuggestionIdx,

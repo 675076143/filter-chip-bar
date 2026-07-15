@@ -6,9 +6,7 @@ import {
   Trash2,
   Share2,
   HelpCircle,
-  Clock,
   Camera,
-  Loader2,
 } from 'lucide-react';
 import {
   type ChipConfig,
@@ -19,12 +17,11 @@ import {
 } from './types';
 import { truncate } from './tokenize';
 import { useFilterChipBar, autoPlaceholder } from './hook';
+import { dedupeFilterTokens } from './parser';
 import FilterChipBarPanel from './FilterChipBarPanel';
 import { Popover, PopoverTrigger, PopoverContent, PopoverAnchor } from './ui/popover';
 import { cn } from './lib/utils';
 import { CalendarRangePanel } from './CalendarRangePanel';
-
-const DEFAULT_PLACEHOLDER = 'Search or type filters...';
 
 const DEFAULT_SYNTAX_HELP: ReactNode = (
   <div className="text-xs leading-relaxed max-w-[280px] space-y-0.5">
@@ -45,6 +42,8 @@ export interface FilterChipBarProps {
   tabs?: TabOption[];
   rightExtra?: ReactNode;
   initialSearchText?: string;
+  value?: string;
+  onValueChange?: (value: string) => void;
   initialTab?: number;
   commands?: ActionCommand[];
   placeholder?: string;
@@ -63,6 +62,8 @@ export default function FilterChipBar({
   tabs,
   rightExtra,
   initialSearchText = '',
+  value,
+  onValueChange,
   initialTab = -1,
   commands,
   placeholder,
@@ -73,17 +74,18 @@ export default function FilterChipBar({
   searchLoading,
   locale = 'en',
 }: FilterChipBarProps) {
-  const resolvedPlaceholder = placeholder ?? autoPlaceholder(chipConfigs);
+  const resolvedPlaceholder = placeholder ?? autoPlaceholder(chipConfigs, locale);
   const fcb = useFilterChipBar({
     chipConfigs,
     storageNamespace,
     commands,
     initialSearchText,
+    value,
+    onValueChange,
     initialTab,
     onFiltersChange,
     searchResultCount,
     searchLoading,
-    locale,
   });
 
   const isCurrentSearchPreset = useMemo(
@@ -135,28 +137,18 @@ export default function FilterChipBar({
     );
   };
 
-  const renderSuggestionLabel = (label: string, matchText: string): ReactNode => {
-    const lower = matchText.toLowerCase();
-    if (!lower) return label;
-    const idx = label.toLowerCase().indexOf(lower);
-    if (idx < 0) return label;
-    return (
-      <>
-        {label.slice(0, idx)}
-        <span className="font-semibold text-foreground">
-          {label.slice(idx, idx + lower.length)}
-        </span>
-        {label.slice(idx + lower.length)}
-      </>
-    );
-  };
-
   const dropdownContent: ReactNode = (
     <FilterChipBarPanel
       vm={{
         dropdown: {
           suggestions: fcb.suggestions.map((s, idx) => ({
-            key: s.isDivider ? `div-${idx}` : s.isHeader ? `hdr-${s.label}` : s.value,
+            key: s.isDivider
+              ? `div-${idx}`
+              : s.isHeader
+                ? `hdr-${idx}-${s.label}`
+                : s.action === 'datePicker'
+                  ? s.value
+                  : `item-${idx}-${s.action ?? 'default'}-${s.value || s.label}`,
             label: s.label,
             hint: s.hint,
             active: idx === fcb.activeSuggestionIdx,
@@ -361,7 +353,7 @@ export default function FilterChipBar({
                     const e = end.format('YYYY-MM-DD');
                     const lastSpace = fcb.searchText.lastIndexOf(' ');
                     const before = lastSpace === -1 ? '' : fcb.searchText.slice(0, lastSpace + 1);
-                    fcb.setSearchText(`${before}${datePickerState.prefix}${s}~${e}`);
+                    fcb.setSearchText(dedupeFilterTokens(`${before}${datePickerState.prefix}${s}~${e}`, chipConfigs));
                     setDatePickerState(null);
                     fcb.setDropdownOpen(false);
                   }}

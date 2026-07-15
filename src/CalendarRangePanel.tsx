@@ -16,7 +16,6 @@ export function CalendarRangePanel({ onChange, className, style }: CalendarRange
   const [hovering, setHovering] = useState<Dayjs | null>(null);
 
   const nextMonth = viewMonth.add(1, 'month');
-  const monthEnd = viewMonth.endOf('month');
 
   const buildDays = (month: Dayjs) => {
     const start = month.startOf('month').day(); // 0=Sun

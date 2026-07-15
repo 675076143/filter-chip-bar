@@ -7,6 +7,7 @@ export {
   type TabOption,
   type FilterType,
   type AsyncOptions,
+  type AsyncOptionsContext,
   type ChipConfig,
   type SearchPreset,
   type RecentSearch,
@@ -19,7 +20,7 @@ export {
   loadRecent,
   saveRecent,
 } from './types';
-export { parseCurrentToken, parseQuery, matchConfig, type ParsedToken } from './parser';
+export { dedupeFilterTokens, parseCurrentToken, parseQuery, matchConfig, type ParsedToken } from './parser';
 export { tokenizeSearchText, truncate } from './tokenize';
 export { levenshtein, findClosest } from './fuzzy';
 export {

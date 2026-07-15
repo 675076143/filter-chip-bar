@@ -223,6 +223,8 @@ When the user types a keyword that matches a command, it appears in the dropdown
 | `tabs` | `TabOption[]` | | Tab bar options with optional count (empty = no tab bar) |
 | `commands` | `ActionCommand[]` | | Command Palette actions |
 | `initialSearchText` | `string` | | Pre-fill search text (e.g. from URL) |
+| `value` | `string` | | Controlled query text |
+| `onValueChange` | `(value: string) => void` | | Called whenever query text changes |
 | `initialTab` | `string \| number` | | Pre-select tab (default: `-1` = All) |
 | `placeholder` | `string` | | Input placeholder |
 | `syntaxHelp` | `ReactNode` | | Custom syntax help popover content |
@@ -249,7 +251,8 @@ interface FilterChipBarResult {
 interface ChipConfig {
   type: 'select' | 'multiSelect' | 'input' | 'dateRange' | 'numberRange';
   label: string;
-  options?: FilterOption[] | (() => Promise<FilterOption[]>);  // Static array or async loader
+  options?: FilterOption[] | ((chips, { signal }) => Promise<FilterOption[]>);
+  duplicatePolicy?: 'replace' | 'preserve'; // Default: replace
   precision?: number;      // numberRange decimal places
   min?: number;            // numberRange minimum
 }
@@ -351,6 +354,8 @@ filter-chip-bar
 ├── FilterChipBar               ← shadcn renderer (default export)
 │   Radix Popover + Tailwind CSS + lucide-react
 │
+├── FilterChipBarPanel          ← shared UI primitives (filter-chip-bar/primitives)
+│
 └── FilterChipBarAntd6          ← antd6 adapter (filter-chip-bar/antd6)
     Ant Design 6 + @ant-design/icons
 ```
@@ -361,7 +366,9 @@ filter-chip-bar
 |------------|-------------|
 | `filter-chip-bar` | shadcn renderer + hook + all types |
 | `filter-chip-bar/headless` | Hook only (zero UI dependency) |
+| `filter-chip-bar/primitives` | Shared panel, calendar and ViewModel types |
 | `filter-chip-bar/antd6` | antd6 renderer + hook + all types |
+| `filter-chip-bar/styles` | shadcn CSS variables and Tailwind layers |
 
 ## Development
 

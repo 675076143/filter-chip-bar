@@ -8,6 +8,42 @@ export interface ParsedToken {
   negated?: boolean;
 }
 
+export interface QueryPart {
+  text: string;
+  whitespace: boolean;
+}
+
+/** Split query text without breaking whitespace enclosed by single or double quotes. */
+export function scanQueryParts(text: string): QueryPart[] {
+  const parts: QueryPart[] = [];
+  let start = 0;
+  let quote: '"' | "'" | null = null;
+
+  const push = (end: number, whitespace: boolean) => {
+    if (end > start) parts.push({ text: text.slice(start, end), whitespace });
+    start = end;
+  };
+
+  for (let index = 0; index < text.length; index += 1) {
+    const char = text[index];
+    if (quote) {
+      if (char === quote && text[index - 1] !== '\\') quote = null;
+      continue;
+    }
+    if (char === '"' || char === "'") {
+      quote = char;
+      continue;
+    }
+    if (/\s/.test(char)) {
+      push(index, false);
+      while (index + 1 < text.length && /\s/.test(text[index + 1])) index += 1;
+      push(index + 1, true);
+    }
+  }
+  push(text.length, false);
+  return parts;
+}
+
 export function matchConfig(token: string, chipConfigs: ChipConfig[]): { config: ChipConfig; valuePart: string } | null {
   for (const config of chipConfigs) {
     if (config.prefix && token.toLowerCase().startsWith(config.prefix.toLowerCase())) {
@@ -25,9 +61,40 @@ export function matchConfig(token: string, chipConfigs: ChipConfig[]): { config:
   return config ? { config, valuePart } : null;
 }
 
+function getTokenConfig(token: string, chipConfigs: ChipConfig[]): ChipConfig | null {
+  const isNegated = token.startsWith('-');
+  const cleanToken = isNegated ? token.slice(1) : token;
+  const matched = matchConfig(cleanToken, chipConfigs);
+  return matched?.config ?? null;
+}
+
+/**
+ * 产生场景：用户通过下拉选择、日期范围选择器、粘贴或手动输入，可能把同一个筛选字段重复追加到搜索框；同一字段也可能同时出现普通筛选和排除筛选。
+ * 影响面：重复字段会导致页面展示多个相同筛选条件，但接口解析时通常只以最后一个值生效，造成展示和实际查询不一致。
+ */
+export function dedupeFilterTokens(text: string, chipConfigs: ChipConfig[]): string {
+  const tokens = scanQueryParts(text).filter((part) => !part.whitespace).map((part) => part.text);
+  const seen = new Set<string>();
+  const result: string[] = [];
+  const trailingWhitespace = text.match(/\s+$/)?.[0] ?? '';
+
+  for (let index = tokens.length - 1; index >= 0; index -= 1) {
+    const token = tokens[index];
+    const config = getTokenConfig(token, chipConfigs);
+    if (config && config.duplicatePolicy !== 'preserve') {
+      if (seen.has(config.label)) continue;
+      seen.add(config.label);
+    }
+    result.unshift(token);
+  }
+
+  return `${result.join(' ')}${result.length > 0 ? trailingWhitespace : ''}`;
+}
+
 export function parseCurrentToken(text: string, chipConfigs: ChipConfig[]): ParsedToken {
-  const lastSpaceIdx = text.lastIndexOf(' ');
-  let token = lastSpaceIdx === -1 ? text : text.slice(lastSpaceIdx + 1);
+  const parts = scanQueryParts(text);
+  const lastPart = parts[parts.length - 1];
+  let token = lastPart?.whitespace ? '' : (lastPart?.text ?? '');
   if (token === '') return { phase: 'filterName', prefix: '' };
 
   const isNegated = token.startsWith('-');
@@ -55,7 +122,7 @@ export function parseQuery(
 ): { chips: Record<string, unknown>; freeText: string[] } {
   const chips: Record<string, unknown> = {};
   const freeText: string[] = [];
-  const tokens = text.split(/\s+/).filter(Boolean);
+  const tokens = scanQueryParts(text).filter((part) => !part.whitespace).map((part) => part.text);
 
   for (const token of tokens) {
     const isNegated = token.startsWith('-');
@@ -68,8 +135,6 @@ export function parseQuery(
     }
 
     const { config, valuePart: rawValue } = matched;
-    rawValue.replace(/^["']|["']$/g, '');
-
     const canonicalLabel = config.label;
     const chipKey = isNegated ? `not_${canonicalLabel}` : canonicalLabel;
     const resolvedOpts = resolvedOptions?.[canonicalLabel] ?? [];

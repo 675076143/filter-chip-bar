@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { parseQuery, parseCurrentToken } from '../parser';
+import { dedupeFilterTokens, parseQuery, parseCurrentToken } from '../parser';
 import { tokenizeSearchText } from '../tokenize';
-import { levenshtein, findClosest } from '../fuzzy';
+import { levenshtein, findClosest, isFuzzyMatch } from '../fuzzy';
 import type { ChipConfig, TextToken, FilterOption } from '../types';
 
 const configs: ChipConfig[] = [
@@ -140,6 +140,75 @@ describe('parseQuery', () => {
       Status: [{ value: 99, label: 'Custom' }],
     });
     expect(chips.Status).toBe(99);
+  });
+});
+
+describe('dedupeFilterTokens', () => {
+  it('keeps the last value when the same filter is repeated', () => {
+    expect(dedupeFilterTokens('Status:Pending Status:Passing', configs)).toBe('Status:Passing');
+  });
+
+  it('dedupes repeated dateRange filters', () => {
+    expect(
+      dedupeFilterTokens('Date:2024-01-01~2024-01-31 Date:2024-02-01~2024-02-29', configs),
+    ).toBe('Date:2024-02-01~2024-02-29');
+  });
+
+  it('dedupes positive and negated filters on the same field', () => {
+    expect(dedupeFilterTokens('Status:Passing -Status:Failing Status:Pending', configs)).toBe(
+      'Status:Pending',
+    );
+    expect(dedupeFilterTokens('Status:Passing -Status:Failing', configs)).toBe('-Status:Failing');
+  });
+
+  it('dedupes Chinese positive and negated filters on the same field', () => {
+    const chineseConfigs: ChipConfig[] = [
+      {
+        type: 'select',
+        label: '部门',
+        options: [
+          { value: 12, label: '0012' },
+          { value: 13, label: '0013' },
+        ],
+      },
+    ];
+
+    expect(dedupeFilterTokens('部门:0012 -部门:0012', chineseConfigs)).toBe('-部门:0012');
+    expect(dedupeFilterTokens('-部门:0012 部门:0013', chineseConfigs)).toBe('部门:0013');
+  });
+
+  it('preserves trailing whitespace after a completed filter', () => {
+    expect(dedupeFilterTokens('Status:Passing ', configs)).toBe('Status:Passing ');
+  });
+
+  it('preserves repeated fields when configured', () => {
+    const preserveConfigs: ChipConfig[] = [
+      { type: 'select', label: 'Status', duplicatePolicy: 'preserve' },
+    ];
+    expect(dedupeFilterTokens('Status:Passing -Status:Failing', preserveConfigs)).toBe(
+      'Status:Passing -Status:Failing',
+    );
+  });
+
+  it('keeps quoted values with spaces intact', () => {
+    const inputConfigs: ChipConfig[] = [{ type: 'input', label: 'Name' }];
+    expect(dedupeFilterTokens('Name:"Old value" Name:"iPhone 15 Pro"', inputConfigs)).toBe(
+      'Name:"iPhone 15 Pro"',
+    );
+  });
+});
+
+describe('quoted values', () => {
+  const inputConfigs: ChipConfig[] = [{ type: 'input', label: 'Name' }];
+
+  it('parses a quoted input value containing spaces', () => {
+    expect(parseQuery('Name:"iPhone 15 Pro"', inputConfigs).chips.Name).toBe('iPhone 15 Pro');
+  });
+
+  it('tokenizes a quoted input value as one chip', () => {
+    const tokens = tokenizeSearchText('Name:"iPhone 15 Pro" next', inputConfigs);
+    expect(tokens[0]).toMatchObject({ type: 'chip', value: '"iPhone 15 Pro"' });
+    expect(tokens[2]).toMatchObject({ type: 'freeText', text: 'next' });
   });
 });
 
@@ -297,6 +366,11 @@ describe('fuzzy matching (FEC)', () => {
 
   it('finds closest match within distance', () => {
     expect(findClosest('Pasing', ['Pending', 'Passing', 'Failing'], 2)).toBe('Passing');
+  });
+
+  it('does not fuzzy match short unrelated values', () => {
+    expect(findClosest('MM', ['11'], 2)).toBeNull();
+    expect(isFuzzyMatch('MM', '11', 2)).toBe(false);
   });
 
   it('returns null when no match within distance', () => {
