@@ -112,6 +112,27 @@ describe('parseQuery', () => {
     expect(chips.Orders).toEqual({ operation: '>=', value: 100, end: undefined });
   });
 
+  it('returns typed expressions alongside the legacy chips map', () => {
+    const result = parseQuery(
+      'Status:Passing,Failing -Tags:Alpha Orders:100~200 Date:2024-01-01~2024-01-31',
+      configs,
+      opts,
+    );
+    expect(result.expressions).toEqual([
+      { field: 'Status', operator: 'in', negated: false, value: [1, 2] },
+      { field: 'Tags', operator: 'in', negated: true, value: ['a'] },
+      { field: 'Orders', operator: 'range', negated: false, value: [100, 200] },
+      { field: 'Date', operator: 'range', negated: false, value: ['2024-01-01', '2024-01-31'] },
+    ]);
+  });
+
+  it('preserves negation for numeric expressions', () => {
+    const result = parseQuery('-Orders:>=100', configs, opts);
+    expect(result.expressions).toEqual([
+      { field: 'Orders', operator: 'gte', negated: true, value: 100 },
+    ]);
+  });
+
   it('ignores unknown labels → freeText', () => {
     const { chips, freeText } = parseQuery('Unknown:val', configs, opts);
     expect(chips.Unknown).toBeUndefined();

@@ -241,8 +241,16 @@ When the user types a keyword that matches a command, it appears in the dropdown
 interface FilterChipBarResult {
   searchText: string;                  // Raw search text
   chips: Record<string, unknown>;      // Parsed conditions (label-keyed)
+  expressions: FilterExpression[];     // Typed field/operator/value expressions
   freeText: string[];                  // Non-key:value text tokens
   tab: string | number;                // Tab value (-1 = All)
+}
+
+interface FilterExpression {
+  field: string;
+  operator: 'eq' | 'in' | 'gte' | 'lte' | 'range';
+  negated: boolean;
+  value: unknown;
 }
 ```
 

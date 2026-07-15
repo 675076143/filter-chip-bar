@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Keyboard navigation and persistence tests
 - Changelog section on the public website
 - Injectable synchronous storage adapter
+- Typed `FilterExpression[]` output alongside the legacy chips map
 
 ### Changed
 - Package manager migrated from npm to pnpm workspaces

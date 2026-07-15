@@ -8,6 +8,8 @@ export {
   type SearchPreset,
   type RecentSearch,
   type FilterChipBarResult,
+  type FilterExpression,
+  type FilterOperator,
   type SuggestionItem,
   type TextToken,
   type ActionCommand,
@@ -24,7 +26,7 @@ export {
   loadRecent,
   saveRecent,
 } from './types';
-export { dedupeFilterTokens, parseCurrentToken, parseQuery, type ParsedToken } from './parser';
+export { buildFilterExpressions, dedupeFilterTokens, parseCurrentToken, parseQuery, type ParsedToken } from './parser';
 export { tokenizeSearchText, truncate } from './tokenize';
 export { findSelectableSuggestionIndex } from './navigation';
 export {

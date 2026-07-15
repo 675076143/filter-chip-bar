@@ -241,8 +241,16 @@ function MyFilterBar({ chipConfigs, onFiltersChange }) {
 interface FilterChipBarResult {
   searchText: string;                  // 原始搜索文本
   chips: Record<string, unknown>;      // 解析后的条件(label 为 key)
+  expressions: FilterExpression[];     // 带字段、操作符和值的表达式
   freeText: string[];                  // 非 key:value 的文本片段
   tab: string | number;                // Tab 选中值(-1 = 全部)
+}
+
+interface FilterExpression {
+  field: string;
+  operator: 'eq' | 'in' | 'gte' | 'lte' | 'range';
+  negated: boolean;
+  value: unknown;
 }
 ```
 

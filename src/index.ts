@@ -12,6 +12,8 @@ export {
   type SearchPreset,
   type RecentSearch,
   type FilterChipBarResult,
+  type FilterExpression,
+  type FilterOperator,
   type SuggestionItem,
   type TextToken,
   type ActionCommand,
@@ -21,7 +23,7 @@ export {
   loadRecent,
   saveRecent,
 } from './types';
-export { dedupeFilterTokens, parseCurrentToken, parseQuery, matchConfig, type ParsedToken } from './parser';
+export { buildFilterExpressions, dedupeFilterTokens, parseCurrentToken, parseQuery, matchConfig, type ParsedToken } from './parser';
 export { tokenizeSearchText, truncate } from './tokenize';
 export { levenshtein, findClosest } from './fuzzy';
 export { findSelectableSuggestionIndex } from './navigation';

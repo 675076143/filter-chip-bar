@@ -257,11 +257,11 @@ export function useFilterChipBar({
   const applyFilters = useCallback(
     (text: string, s: string | number) => {
       const normalizedText = normalizeSearchText(text);
-      const { chips, freeText } = parseQuery(normalizedText, chipConfigs, allOptions);
+      const { chips, expressions, freeText } = parseQuery(normalizedText, chipConfigs, allOptions);
       const cleaned = Object.fromEntries(
         Object.entries(chips).filter(([, v]) => v !== undefined && v !== null && v !== ''),
       );
-      cbRef.current?.({ searchText: normalizedText, chips: cleaned, freeText, tab: s });
+      cbRef.current?.({ searchText: normalizedText, chips: cleaned, expressions, freeText, tab: s });
       searchRef.current?.();
       pendingSearchRef.current = normalizedText.trim() || null;
       incrementUsage(storageNamespace, storage);

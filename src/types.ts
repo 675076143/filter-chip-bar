@@ -62,10 +62,20 @@ function resolveStorage(storage?: FilterChipBarStorage): FilterChipBarStorage | 
 export interface FilterChipBarResult {
   searchText: string;
   chips: Record<string, unknown>;
+  expressions: FilterExpression[];
   /** Text fragments that are neither chip conditions nor tab — used for full-text search */
   freeText: string[];
   /** Current tab value, -1 means "All" */
   tab: string | number;
+}
+
+export type FilterOperator = 'eq' | 'in' | 'gte' | 'lte' | 'range';
+
+export interface FilterExpression {
+  field: string;
+  operator: FilterOperator;
+  negated: boolean;
+  value: unknown;
 }
 
 export interface SuggestionItem {

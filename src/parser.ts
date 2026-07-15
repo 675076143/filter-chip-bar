@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import type { ChipConfig, FilterOption } from './types';
+import type { ChipConfig, FilterExpression, FilterOption, FilterOperator } from './types';
 
 export interface ParsedToken {
   phase: 'filterName' | 'filterValue' | 'freeText';
@@ -119,7 +119,7 @@ export function parseQuery(
   text: string,
   chipConfigs: ChipConfig[],
   resolvedOptions?: Record<string, FilterOption[]>,
-): { chips: Record<string, unknown>; freeText: string[] } {
+): { chips: Record<string, unknown>; expressions: FilterExpression[]; freeText: string[] } {
   const chips: Record<string, unknown> = {};
   const freeText: string[] = [];
   const tokens = scanQueryParts(text).filter((part) => !part.whitespace).map((part) => part.text);
@@ -198,5 +198,46 @@ export function parseQuery(
       }
     }
   }
-  return { chips, freeText };
+  return { chips, expressions: buildFilterExpressions(chips, chipConfigs), freeText };
+}
+
+export function buildFilterExpressions(
+  chips: Record<string, unknown>,
+  chipConfigs: ChipConfig[],
+): FilterExpression[] {
+  const expressions: FilterExpression[] = [];
+
+  for (const [key, value] of Object.entries(chips)) {
+    const negated = key.startsWith('not_');
+    const field = negated ? key.slice(4) : key;
+    const config = chipConfigs.find((item) => item.label === field);
+    if (!config) continue;
+
+    let operator: FilterOperator;
+    let expressionValue = value;
+
+    if (config.type === 'numberRange' && value && typeof value === 'object') {
+      const numberValue = value as { operation?: string; value?: number; end?: number };
+      operator = numberValue.operation === 'range'
+        ? 'range'
+        : numberValue.operation === '<='
+          ? 'lte'
+          : numberValue.operation === '='
+            ? 'eq'
+            : 'gte';
+      expressionValue = numberValue.operation === 'range'
+        ? [numberValue.value, numberValue.end]
+        : numberValue.value;
+    } else if (config.type === 'dateRange') {
+      operator = 'range';
+    } else if (Array.isArray(value)) {
+      operator = 'in';
+    } else {
+      operator = 'eq';
+    }
+
+    expressions.push({ field, operator, negated, value: expressionValue });
+  }
+
+  return expressions;
 }
