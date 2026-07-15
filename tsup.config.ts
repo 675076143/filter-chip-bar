@@ -8,7 +8,7 @@ export default defineConfig({
     antd6: 'examples/antd6-renderer.tsx',
   },
   format: ['cjs', 'esm'],
-  dts: true,
+  dts: false,
   splitting: false,
   sourcemap: true,
   clean: true,

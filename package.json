@@ -8,27 +8,31 @@
     "url": "https://github.com/675076143/filter-chip-bar"
   },
   "type": "module",
+  "packageManager": "pnpm@10.17.1",
+  "engines": {
+    "node": ">=26"
+  },
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "types": "./dist/types/src/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
+      "types": "./dist/types/src/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
     "./headless": {
-      "types": "./dist/headless.d.ts",
+      "types": "./dist/types/src/headless.d.ts",
       "import": "./dist/headless.js",
       "require": "./dist/headless.cjs"
     },
     "./antd6": {
-      "types": "./dist/antd6.d.ts",
+      "types": "./dist/types/examples/antd6-renderer.d.ts",
       "import": "./dist/antd6.js",
       "require": "./dist/antd6.cjs"
     },
     "./primitives": {
-      "types": "./dist/primitives.d.ts",
+      "types": "./dist/types/src/primitives.d.ts",
       "import": "./dist/primitives.js",
       "require": "./dist/primitives.cjs"
     },
@@ -42,8 +46,8 @@
   ],
   "sideEffects": ["**/*.css"],
   "scripts": {
-    "build": "tsup",
-    "prepack": "npm run build",
+    "build": "tsup && tsc -p tsconfig.build.json",
+    "prepack": "pnpm run build",
     "dev": "tsup --watch",
     "lint": "oxlint src/",
     "test": "vitest run",
@@ -112,9 +116,14 @@
     "storybook": "^8.6.0",
     "tailwindcss": "^3.4.19",
     "tsup": "^8.4.0",
-    "typescript": "^5.7.0",
+    "typescript": "^7.0.2",
     "vite": "^5.4.21",
     "vitest": "^3.2.6"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",

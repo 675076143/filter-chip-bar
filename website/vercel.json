@@ -1,6 +1,6 @@
 {
-  "buildCommand": "npx vite build",
+  "buildCommand": "pnpm run build",
   "outputDirectory": "dist",
   "framework": "vite",
-  "installCommand": "cd .. && npm install --legacy-peer-deps && cd website && npm install"
+  "installCommand": "cd .. && pnpm install --frozen-lockfile"
 }

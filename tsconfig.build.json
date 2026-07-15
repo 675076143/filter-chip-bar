@@ -1,0 +1,22 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "declaration": true,
+    "declarationMap": false,
+    "emitDeclarationOnly": true,
+    "noEmit": false,
+    "outDir": "./dist/types",
+    "rootDir": "."
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "examples/antd6-renderer.tsx"
+  ],
+  "exclude": [
+    "src/**/*.stories.tsx",
+    "src/**/__tests__/**",
+    "node_modules",
+    "dist"
+  ]
+}
