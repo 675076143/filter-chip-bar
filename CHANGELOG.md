@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Declaration generation moved from tsup to TypeScript `emitDeclarationOnly`
 - Headless entry no longer exports renderer components
 - Documentation rewritten around behavior and constraints
+- Website redesigned with navigation, dark mode, responsive layouts, scenario demos, package-manager tabs, renderer examples, and SEO metadata
 
 ### Fixed
 - Published package exports now point to `dist`
