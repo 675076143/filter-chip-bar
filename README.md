@@ -42,7 +42,7 @@ Traditional backends give users a row of dropdowns, date pickers, and checkboxes
 ## Install
 
 ```bash
-npm install filter-chip-bar
+pnpm add filter-chip-bar
 ```
 
 **Peer dependencies** (only React is required — antd is optional):
@@ -56,7 +56,7 @@ npm install filter-chip-bar
 
 If using the **antd6 adapter**, also install:
 ```bash
-npm install antd @ant-design/icons
+pnpm add antd @ant-design/icons
 ```
 
 ## Quick Start
@@ -374,16 +374,16 @@ filter-chip-bar
 
 ```bash
 # Install dependencies
-npm install
+pnpm install
 
 # Start Storybook dev server
-npm run storybook
+pnpm run storybook
 
 # Build for production
-npm run build
+pnpm run build
 
 # Build Storybook static
-npm run build-storybook
+pnpm run build-storybook
 ```
 
 ## License

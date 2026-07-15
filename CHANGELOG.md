@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Controlled `value` and `onValueChange` API
+- `duplicatePolicy` for repeated filter fields
+- AbortSignal support for asynchronous options
+- `/primitives` package entry
+- Shared quoted-value scanner
+- Keyboard navigation and persistence tests
+- Changelog section on the public website
+
+### Changed
+- Package manager migrated from npm to pnpm workspaces
+- CI and publishing upgraded to Node.js 26
+- TypeScript upgraded to 7.0.2
+- Declaration generation moved from tsup to TypeScript `emitDeclarationOnly`
+- Headless entry no longer exports renderer components
+- Documentation rewritten around behavior and constraints
+
+### Fixed
+- Published package exports now point to `dist`
+- Quoted values containing spaces parse as one token
+- Short unrelated values no longer produce fuzzy suggestions
+- Duplicate suggestion keys and post-unmount timers
+- Keyboard navigation skips headers and dividers
+- Combobox/listbox ARIA relationships in both renderers
+
 ## [0.2.0] - 2026-06-22
 
 ### Breaking Changes

@@ -42,7 +42,7 @@
 ## 安装
 
 ```bash
-npm install filter-chip-bar
+pnpm add filter-chip-bar
 ```
 
 **Peer dependencies**(只需 React,antd 是可选的):
@@ -56,7 +56,7 @@ npm install filter-chip-bar
 
 如果使用 **antd6 适配器**,还需安装:
 ```bash
-npm install antd @ant-design/icons
+pnpm add antd @ant-design/icons
 ```
 
 ## 快速开始
@@ -374,16 +374,16 @@ filter-chip-bar
 
 ```bash
 # 安装依赖
-npm install
+pnpm install
 
 # 启动 Storybook 开发服务器
-npm run storybook
+pnpm run storybook
 
 # 构建产物
-npm run build
+pnpm run build
 
 # 构建 Storybook 静态站点
-npm run build-storybook
+pnpm run build-storybook
 ```
 
 ## 开源协议

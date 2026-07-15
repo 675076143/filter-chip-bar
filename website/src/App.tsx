@@ -18,7 +18,7 @@ const i18n = {
     demoDesc: 'Type a filter value like "Passing" and see it auto-suggest the matching field. Click any example below to pre-fill.',
     featuresNum: '01 · Features',
     featuresTitle: 'Capabilities',
-    featuresDesc: 'Nine features, each backed by a discipline: math, comms theory, psychology, physics, engineering, and philosophy.',
+    featuresDesc: 'Structured filters, keyboard navigation, async options, presets, and renderer choices.',
     syntaxNum: '02 · Syntax',
     syntaxTitle: 'Search Syntax',
     syntaxDesc: 'One input box supports structured filtering, negation, aliases, prefixes, commands, and auto-correction.',
@@ -32,7 +32,7 @@ const i18n = {
       { syntax: '/command', desc: 'Slash command', example: '/docs' },
       { syntax: 'key:>=100', desc: 'Numeric compare', example: 'Orders:>=500' },
       { syntax: 'key:100~200', desc: 'Numeric range', example: 'Orders:100~500' },
-      { syntax: 'typo', desc: 'Auto-correct (FEC)', example: 'Pasing → Passing' },
+      { syntax: 'typo', desc: 'Nearby value suggestion', example: 'Pasing → Passing' },
       { syntax: '"value"', desc: 'Cross-field suggestion', example: 'Passing → Status:Passing' },
       { syntax: 'free text', desc: 'Full-text search', example: 'kxccaqvx12' },
       { syntax: 'date:range', desc: 'Date range shortcuts', example: 'Created:近7天 → 2026-06-20~2026-06-26' },
@@ -44,12 +44,15 @@ const i18n = {
     architectureNum: '04 · Architecture',
     architectureTitle: 'Headless by Design',
     architectureDesc: 'useFilterChipBar() is pure logic with zero UI dependency. Renderers are separate — shadcn (default), antd6, or build your own.',
+    changelogNum: '05 · Changelog',
+    changelogTitle: 'Recent Changes',
+    changelogDesc: 'Release notes and migration-relevant changes from the repository changelog.',
     footer: 'MIT License · Built with React + Radix UI + Tailwind CSS',
     features: [
       { title: 'Structured Filtering', desc: 'Type Status:Passing to filter by field. Negation with -Status:Pending.', icon: '🔍' },
       { title: 'Multi-Protocol Prefix', desc: '#tag for tags, @user for mentions, /cmd for actions — mix freely in one box.', icon: '#️⃣' },
       { title: 'Label Aliases', desc: 'st:pass = Status:Passing. Shortcuts for frequently used fields.', icon: '⚡' },
-      { title: 'Typo Correction', desc: 'Misspelled a value? "Did you mean Passing?" — one click to fix via FEC.', icon: '🛡️' },
+      { title: 'Typo Suggestions', desc: 'Nearby valid values are offered when there is no exact match.', icon: '🛡️' },
       { title: 'Value Discovery', desc: 'Type a value like "Passing" and get the matching field suggested automatically.', icon: '🎯' },
       { title: 'Command Palette', desc: 'Type /docs or /install for quick navigation and actions.', icon: '⌘' },
       { title: 'Cascading Filters', desc: 'Selecting a department automatically filters available teams.', icon: '🔗' },
@@ -72,7 +75,7 @@ const i18n = {
     demoDesc: '直接输入筛选值如 "Passing"，系统自动提示对应字段。点击下方示例快速填充。',
     featuresNum: '01 · 特性',
     featuresTitle: '核心能力',
-    featuresDesc: '九个特性，各有学科支撑：数学、通信学、心理学、物理学、工程学、哲学。',
+    featuresDesc: '结构化筛选、键盘导航、异步选项、预设和多套渲染器。',
     syntaxNum: '02 · 语法',
     syntaxTitle: '搜索语法',
     syntaxDesc: '一个输入框支持结构化筛选、排除、别名、前缀、命令、自动纠错。',
@@ -86,7 +89,7 @@ const i18n = {
       { syntax: '/command', desc: '斜杠命令', example: '/docs' },
       { syntax: 'key:>=100', desc: '数值比较', example: 'Orders:>=500' },
       { syntax: 'key:100~200', desc: '数值区间', example: 'Orders:100~500' },
-      { syntax: '笔误', desc: '自动纠错 (FEC)', example: 'Pasing → Passing' },
+      { syntax: '笔误', desc: '相近值建议', example: 'Pasing → Passing' },
       { syntax: '"值"', desc: '跨字段建议', example: 'Passing → Status:Passing' },
       { syntax: '自由文本', desc: '全文搜索', example: 'kxccaqvx12' },
       { syntax: '日期:range', desc: '日期快捷范围', example: 'Created:近7天 → 2026-06-20~2026-06-26' },
@@ -98,6 +101,9 @@ const i18n = {
     architectureNum: '04 · 架构',
     architectureTitle: 'Headless 设计',
     architectureDesc: 'useFilterChipBar() 纯逻辑零 UI 依赖。渲染器独立——shadcn（默认）、antd6，或自己写。',
+    changelogNum: '05 · 更新记录',
+    changelogTitle: '最近变更',
+    changelogDesc: '从仓库 Changelog 摘取与接入和迁移相关的变更。',
     footer: 'MIT 协议 · 基于 React + Radix UI + Tailwind CSS',
     features: [
       { title: '结构化筛选', desc: '输入 Status:Passing 按字段筛选。-Status:Pending 排除匹配。', icon: '🔍' },
@@ -111,6 +117,21 @@ const i18n = {
       { title: '大小写不敏感', desc: 'status:passing 和 Status:Passing 效果相同。', icon: '🔤' },
     ],
   },
+} as const;
+
+const recentChanges = {
+  en: [
+    'Migrated builds and publishing to pnpm workspaces and Node.js 26.',
+    'Upgraded to TypeScript 7.0.2 with declarations emitted by TypeScript.',
+    'Added controlled values, duplicate policies, and abortable async options.',
+    'Fixed quoted-value parsing, keyboard navigation, and renderer ARIA links.',
+  ],
+  zh: [
+    '构建与发布迁移到 pnpm workspace 和 Node.js 26。',
+    '升级 TypeScript 7.0.2，由 TypeScript 直接生成声明文件。',
+    '新增受控值、重复字段策略和可中止异步选项。',
+    '修复引号值解析、键盘导航和渲染器 ARIA 关联。',
+  ],
 } as const;
 
 const chipConfigs: ChipConfig[] = [
@@ -164,12 +185,6 @@ function App() {
         </div>
         <h1>filter-chip-bar</h1>
         <p className="tagline">{t.tagline}</p>
-        <div className="hero-tokens">
-          <span><b>Canvas</b>#f5f4ed</span>
-          <span><b>Accent</b>#1B365D</span>
-          <span><b>Serif</b>Charter / Georgia</span>
-          <span><b>Hook</b>Headless + Renderers</span>
-        </div>
       </header>
 
       {/* ============ 00 · DEMO ============ */}
@@ -191,7 +206,7 @@ function App() {
               commands={[
                 { keywords: ['docs','storybook','documentation'], label: lang === 'zh' ? '查看文档' : 'View Documentation', hint: 'Open Storybook', action: () => window.open('https://filter-chip-bar.vercel.app', '_blank') },
                 { keywords: ['github','source','code'], label: lang === 'zh' ? '查看源码' : 'View Source', hint: 'GitHub', action: () => window.open('https://github.com/675076143/filter-chip-bar', '_blank') },
-                { keywords: ['install','npm','download'], label: 'npm install filter-chip-bar', hint: lang === 'zh' ? '复制命令' : 'Copy command', action: () => navigator.clipboard.writeText('npm install filter-chip-bar') },
+                { keywords: ['install','pnpm','download'], label: 'pnpm add filter-chip-bar', hint: lang === 'zh' ? '复制命令' : 'Copy command', action: () => navigator.clipboard.writeText('pnpm add filter-chip-bar') },
               ]}
             />
           </div>
@@ -228,9 +243,6 @@ function App() {
             </div>
           ))}
         </div>
-        <div className="quote-bar" style={{marginTop:32}}>
-          Beauty = constraints × intention ÷ noise. One accent, warm neutrals, serif authority, generous whitespace.
-        </div>
       </section>
 
       {/* ============ 02 · SYNTAX ============ */}
@@ -255,9 +267,9 @@ function App() {
         <p className="section-num">{t.installNum}</p>
         <h2 className="section-title">{t.installTitle}</h2>
         <p className="section-lede">{t.installDesc}</p>
-        <pre className="code-block"><span className="c">$ </span>npm install filter-chip-bar</pre>
+        <pre className="code-block"><span className="c">$ </span>pnpm add filter-chip-bar</pre>
         <div style={{display:'flex',gap:12,marginTop:16,flexWrap:'wrap'}}>
-          <button className="btn btn-primary" onClick={() => { navigator.clipboard.writeText('npm install filter-chip-bar'); setCopied(true); setTimeout(()=>setCopied(false),2000); }}>{copied ? 'Copied' : t.copy}</button>
+          <button className="btn btn-primary" onClick={() => { navigator.clipboard.writeText('pnpm add filter-chip-bar'); setCopied(true); setTimeout(()=>setCopied(false),2000); }}>{copied ? 'Copied' : t.copy}</button>
           <a href="https://filter-chip-bar.vercel.app" target="_blank" rel="noopener" className="btn btn-secondary" style={{textDecoration:'none'}}>Storybook →</a>
           <a href="https://github.com/675076143/filter-chip-bar" target="_blank" rel="noopener" className="btn btn-secondary" style={{textDecoration:'none'}}>GitHub →</a>
         </div>
@@ -276,6 +288,21 @@ function App() {
             <span className="tag standard">antd6</span>
             <span className="tag standard">custom</span>
           </div>
+        </div>
+      </section>
+
+      <section>
+        <p className="section-num">{t.changelogNum}</p>
+        <h2 className="section-title">{t.changelogTitle}</h2>
+        <p className="section-lede">{t.changelogDesc}</p>
+        <div className="changelog-card">
+          <div className="changelog-version">Unreleased</div>
+          <ul>
+            {recentChanges[lang].map(change => <li key={change}>{change}</li>)}
+          </ul>
+          <a href="https://github.com/675076143/filter-chip-bar/blob/main/CHANGELOG.md" target="_blank" rel="noopener" className="footer-link">
+            {lang === 'zh' ? '查看完整 Changelog →' : 'View full changelog →'}
+          </a>
         </div>
       </section>
 

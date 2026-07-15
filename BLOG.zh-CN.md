@@ -58,9 +58,7 @@
 
 用户把 `Passing` 打成了 `Pasing`。传统做法是标红，让用户自己发现。
 
-这里参考了通信工程里的前向纠错（FEC）。用 Levenshtein 编辑距离找到最近的合法选项，在下拉框里提示 "Did you mean **Passing**?"。用户一键纠正，不用删掉重打。
-
-据统计，92% 的打字错误是单字符错误，距离设为 2 基本能覆盖。
+组件使用 Levenshtein 编辑距离查找接近的合法选项，在下拉框里提示 "Did you mean **Passing**?"。短于三个字符的值不参与模糊匹配，避免把无关短值推荐给用户。
 
 ### 大小写
 
@@ -75,7 +73,7 @@
 全教——信息过载，直接劝退。
 不教——功能藏太深，永远没人发现。
 
-最后参考了维果茨基的最近发展区（ZPD）：在用户用到一定次数后，适时弹出一条提示。
+最终采用按使用次数逐步展示提示的方式：
 
 ```
 第 3 次使用 → 💡 输入 字段:值 来按字段筛选
@@ -95,7 +93,7 @@
 - **150ms**：输入框失焦后关闭下拉框的延迟。太短用户来不及点建议项，太长下拉框关不掉
 - **200ms**：级联选项重新加载的防抖。用户连续输入多个条件时，只发最后一次请求，不每次都打 API
 
-人类对视觉延迟的感知阈值大约在 200ms 左右——低于它感受不到等待，高于 500ms 就会觉得卡。
+这些参数来自当前交互测试结果，业务侧可以根据请求成本和页面行为继续调整。
 
 ---
 
@@ -198,7 +196,7 @@ GitHub Issues 和 Gmail 用的模式：搜索框支持 `key:value` 语法。
 | 空间占用 | 大         | 小       | 大       | 零(弹窗) | 小          | 小            |
 | 即时反馈 | 有         | 无       | 有       | 有       | 无          | 有            |
 | 自动补全 | 有(下拉)   | 无       | 有(分面) | 有       | 无          | 有            |
-| 错误纠正 | N/A        | 无       | N/A      | 无       | 无          | 有(FEC)       |
+| 拼写建议 | N/A        | 无       | N/A      | 无       | 无          | 有            |
 | 扩展成本 | 高(加控件) | 低       | 高       | 中       | 低          | 低(加配置)    |
 
 核心区别：**FilterChipBar 有自动补全和语法高亮**。用户不需要记住语法——输入 `S` 就看到 `Status:` 的建议，点击即可。打错了会提示 "Did you mean Passing?"。这降低了方案五的学习门槛，同时保留了它的表达力。
@@ -232,7 +230,7 @@ FilterChipBarAntd6    ← antd6 adapter（named export）
 ## 开源
 
 ```bash
-npm install filter-chip-bar
+pnpm add filter-chip-bar
 ```
 
 ```typescript
@@ -250,7 +248,7 @@ import { FilterChipBar } from 'filter-chip-bar';
 - **在线体验**: [https://filter-chip-bar.vercel.app](https://filter-chip-bar.vercel.app)
 - **Storybook 文档**: [https://filter-chip-bar-storybook.vercel.app](https://filter-chip-bar-storybook.vercel.app)
 
-48 个单元测试，中英双语文档，CI/CD 自动发版。
+当前测试覆盖 parser、tokenizer、键盘导航和本地持久化；CI 使用 Node.js 26、pnpm 和 TypeScript 7。
 
 ---
 
