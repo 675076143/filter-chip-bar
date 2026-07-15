@@ -25,6 +25,7 @@ export {
 } from './types';
 export { dedupeFilterTokens, parseCurrentToken, parseQuery, type ParsedToken } from './parser';
 export { tokenizeSearchText, truncate } from './tokenize';
+export { findSelectableSuggestionIndex } from './navigation';
 export {
   useFilterChipBar,
   useFilterChipBarVM,

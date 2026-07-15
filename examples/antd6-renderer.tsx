@@ -86,6 +86,7 @@ export default function FilterChipBarAntd6({
   searchLoading,
 }: FilterChipBarAntd6Props) {
   const { token } = theme.useToken();
+  const listboxId = `${storageNamespace.replace(/[^a-zA-Z0-9_-]/g, '-')}-filter-chip-listbox`;
 
   const fcb = useFilterChipBar({
     chipConfigs,
@@ -255,6 +256,8 @@ export default function FilterChipBarAntd6({
         </div>
       )}
       <div
+        id={listboxId}
+        role="listbox"
         style={{ flex: 1, maxHeight: 320, overflowY: 'auto', padding: `${token.paddingXXS}px 0` }}
       >
         {fcb.suggestions.length === 0 ? (
@@ -308,6 +311,9 @@ export default function FilterChipBarAntd6({
             return (
               <div
                 key={idx}
+                id={`${listboxId}-option-${idx}`}
+                role="option"
+                aria-selected={idx === fcb.activeSuggestionIdx}
                 ref={(el) => {
                   fcb.itemRefs.current[idx] = el;
                 }}
@@ -588,6 +594,12 @@ export default function FilterChipBarAntd6({
               <input
                 ref={fcb.inputRef as React.RefObject<HTMLInputElement>}
                 type="text"
+                role="combobox"
+                aria-label="Search filters"
+                aria-autocomplete="list"
+                aria-expanded={fcb.isDropdownOpen}
+                aria-controls={listboxId}
+                aria-activedescendant={fcb.activeSuggestionIdx >= 0 ? `${listboxId}-option-${fcb.activeSuggestionIdx}` : undefined}
                 value={fcb.searchText}
                 onChange={fcb.handleInputChange}
                 onPaste={fcb.handlePaste}
@@ -613,30 +625,46 @@ export default function FilterChipBarAntd6({
               />
             </div>
             {fcb.searchText && (
-              <CloseCircleFilled
+              <button
+                type="button"
+                aria-label="清空筛选"
                 onMouseDown={(e) => {
                   e.preventDefault();
                   fcb.handleClear();
                 }}
                 style={{
-                  color: token.colorTextQuaternary,
+                  border: 0,
+                  background: 'transparent',
+                  padding: 0,
                   cursor: 'pointer',
                   marginLeft: token.sizeXS,
                   flexShrink: 0,
+                  color: token.colorTextQuaternary,
+                  display: 'inline-flex',
                 }}
-              />
+              >
+                <CloseCircleFilled aria-hidden />
+              </button>
             )}
             {onImageSearch && (
-              <CameraOutlined
+              <button
+                type="button"
+                aria-label="以图搜索"
                 style={{
+                  border: 0,
+                  background: 'transparent',
+                  padding: 0,
                   color: token.colorPrimary,
                   cursor: 'pointer',
                   marginLeft: token.sizeXS,
                   flexShrink: 0,
                   fontSize: 16,
+                  display: 'inline-flex',
                 }}
                 onClick={onImageSearch}
-              />
+              >
+                <CameraOutlined aria-hidden />
+              </button>
             )}
           </div>
         </Dropdown>

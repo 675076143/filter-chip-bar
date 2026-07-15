@@ -23,6 +23,7 @@ export {
 export { dedupeFilterTokens, parseCurrentToken, parseQuery, matchConfig, type ParsedToken } from './parser';
 export { tokenizeSearchText, truncate } from './tokenize';
 export { levenshtein, findClosest } from './fuzzy';
+export { findSelectableSuggestionIndex } from './navigation';
 export {
   DEFAULT_HINTS,
   getUsageCount,

@@ -23,6 +23,7 @@ import {
 import { dedupeFilterTokens, parseCurrentToken, parseQuery, type ParsedToken } from './parser';
 import { tokenizeSearchText } from './tokenize';
 import { findClosest, isFuzzyMatch, levenshtein } from './fuzzy';
+import { findSelectableSuggestionIndex } from './navigation';
 import dayjs from 'dayjs';
 import {
   DEFAULT_HINTS,
@@ -543,23 +544,15 @@ export function useFilterChipBar({
       if (e.key === 'ArrowDown') {
         e.preventDefault();
         setDropdownOpen(true);
-        setActiveIdx((prev) => {
-          let next = prev + 1;
-          while (next < suggestions.length && suggestions[next].isDivider) next++;
-          return Math.min(next, suggestions.length - 1);
-        });
+        setActiveIdx((prev) => findSelectableSuggestionIndex(suggestions, prev, 1));
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
-        setActiveIdx((prev) => {
-          let next = prev - 1;
-          while (next >= 0 && suggestions[next].isDivider) next--;
-          return Math.max(next, 0);
-        });
+        setActiveIdx((prev) => findSelectableSuggestionIndex(suggestions, prev, -1));
       } else if (e.key === 'Enter') {
         e.preventDefault();
         if (activeIdx >= 0 && activeIdx < suggestions.length) {
           const s = suggestions[activeIdx];
-          if (s.isDivider) return;
+          if (s.isDivider || s.isHeader) return;
           if (s.action === 'command' && s.command) {
             executeCommand(s.command);
           } else if (s.action === 'toggleNegate') {
@@ -587,7 +580,7 @@ export function useFilterChipBar({
             ? real[0]
             : null;
 
-        if (!target || target.isDivider) return;
+        if (!target || target.isDivider || target.isHeader) return;
         e.preventDefault();
         if (target.action === 'command' && target.command) {
           executeCommand(target.command);

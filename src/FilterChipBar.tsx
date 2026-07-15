@@ -74,6 +74,7 @@ export default function FilterChipBar({
   searchLoading,
   locale = 'en',
 }: FilterChipBarProps) {
+  const listboxId = `${storageNamespace.replace(/[^a-zA-Z0-9_-]/g, '-')}-filter-chip-listbox`;
   const resolvedPlaceholder = placeholder ?? autoPlaceholder(chipConfigs, locale);
   const fcb = useFilterChipBar({
     chipConfigs,
@@ -139,6 +140,7 @@ export default function FilterChipBar({
 
   const dropdownContent: ReactNode = (
     <FilterChipBarPanel
+      listboxId={listboxId}
       vm={{
         dropdown: {
           suggestions: fcb.suggestions.map((s, idx) => ({
@@ -304,8 +306,8 @@ export default function FilterChipBar({
                   type="text"
                   role="combobox"
                   aria-expanded={fcb.isDropdownOpen}
-                  aria-controls="fcb-listbox"
-                  aria-activedescendant={fcb.activeSuggestionIdx >= 0 ? `fcb-option-${fcb.activeSuggestionIdx}` : undefined}
+                  aria-controls={listboxId}
+                  aria-activedescendant={fcb.activeSuggestionIdx >= 0 ? `${listboxId}-option-${fcb.activeSuggestionIdx}` : undefined}
                   aria-autocomplete="list"
                   aria-label="Search filters"
                   value={fcb.searchText}
@@ -319,19 +321,27 @@ export default function FilterChipBar({
                 />
               </div>
               {fcb.searchText && (
-                <X
-                  className="size-4 text-muted-foreground/60 cursor-pointer shrink-0 ml-0.5 hover:text-foreground transition-colors"
+                <button
+                  type="button"
+                  aria-label="Clear filters"
+                  className="inline-flex size-6 items-center justify-center border-0 bg-transparent p-0 text-muted-foreground/60 cursor-pointer shrink-0 ml-0.5 hover:text-foreground transition-colors"
                   onMouseDown={(e: React.MouseEvent) => {
                     e.preventDefault();
                     fcb.handleClear();
                   }}
-                />
+                >
+                  <X className="size-4" aria-hidden />
+                </button>
               )}
               {onImageSearch && (
-                <Camera
-                  className="size-4 text-primary cursor-pointer shrink-0 ml-0.5 hover:text-primary/80 transition-colors"
+                <button
+                  type="button"
+                  aria-label="Search by image"
+                  className="inline-flex size-6 items-center justify-center border-0 bg-transparent p-0 text-primary cursor-pointer shrink-0 ml-0.5 hover:text-primary/80 transition-colors"
                   onClick={onImageSearch}
-                />
+                >
+                  <Camera className="size-4" aria-hidden />
+                </button>
               )}
             </div>
           </PopoverAnchor>
